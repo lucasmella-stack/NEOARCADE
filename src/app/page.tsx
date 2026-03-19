@@ -56,14 +56,13 @@ export default function GamePage() {
           href={sponsorUrl}
           target="_blank"
           rel="noreferrer"
-          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2"
+          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2 hover:opacity-90 active:scale-95"
           style={{
-            background: "linear-gradient(180deg, #2b1248, #140621)",
-            color: "#ffd166",
-            border: "2px solid #7a3cff",
-            boxShadow: "0 3px 0 #010224, inset 0 1px 0 rgba(255,209,102,0.12)",
+            background: "#000000",
+            color: "#ffffff",
+            border: "2px solid #434343",
+            boxShadow: "0 2px 0 #000",
             fontFamily: '"Courier New", monospace',
-            textShadow: "0 0 8px rgba(255,209,102,0.35)",
           }}
         >
           <svg
