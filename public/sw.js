@@ -4,7 +4,7 @@ const CORE_ASSETS = [
   "/controller",
   "/logo.png",
   "/logo.webp",
-  "/games/mario.html",
+  "/games/mario/index.html",
   "/games/pong.html",
   "/games/snake.html",
   "/games/breakout.html",
