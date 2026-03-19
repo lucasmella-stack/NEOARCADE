@@ -11,23 +11,27 @@ export default function GamePage() {
   return (
     <main
       className="relative w-screen h-screen overflow-hidden flex flex-col"
-      style={{ backgroundColor: "var(--bg-deep)" }}
+      style={{ backgroundColor: "#010224" }}
     >
-      {/* ── TopBar ── */}
+      {/* ── TopBar — 3D retro style ── */}
       <header
         className="relative z-20 flex items-center gap-3 px-4 shrink-0"
         style={{
           height: 52,
-          backgroundColor: "var(--bg-card)",
-          borderBottom: "1px solid color-mix(in srgb, var(--neon-primary) 20%, transparent)",
-          boxShadow: "0 2px 20px color-mix(in srgb, var(--neon-primary) 10%, transparent)",
+          background: "linear-gradient(180deg, #0a1a5c 0%, #011246 100%)",
+          borderBottom: "3px solid #024DD6",
+          boxShadow: "0 4px 0 #010224, 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(88,250,253,0.1)",
         }}
       >
         {/* Logo */}
         <Image src="/logo.webp" alt="NEOARCADE" width={32} height={32} className="shrink-0" />
         <span
           className="text-sm font-bold tracking-[0.25em] uppercase select-none hidden sm:block"
-          style={{ color: "var(--neon-primary)", textShadow: "0 0 10px var(--neon-primary)" }}
+          style={{
+            color: "#58FAFD",
+            textShadow: "0 0 10px #20E9FB, 0 2px 0 #024DD6",
+            fontFamily: '"Courier New", monospace',
+          }}
         >
           NEOARCADE
         </span>
@@ -35,24 +39,28 @@ export default function GamePage() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Botón abrir QR panel */}
+        {/* Botón abrir QR panel — gamepad icon */}
         <button
           onClick={() => setShowPanel(!showPanel)}
-          className="h-8 px-4 rounded text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2"
+          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2"
           style={{
-            backgroundColor: showPanel
-              ? "color-mix(in srgb, var(--neon-primary) 20%, var(--bg-card))"
-              : "color-mix(in srgb, var(--neon-primary) 10%, var(--bg-card))",
-            color: "var(--neon-primary)",
-            border: "1px solid color-mix(in srgb, var(--neon-primary) 40%, transparent)",
-            boxShadow: showPanel ? "0 0 12px color-mix(in srgb, var(--neon-primary) 30%, transparent)" : "none",
+            background: showPanel
+              ? "linear-gradient(180deg, #024DD6, #011246)"
+              : "linear-gradient(180deg, #0a1a5c, #011246)",
+            color: "#58FAFD",
+            border: "2px solid #024DD6",
+            boxShadow: showPanel
+              ? "0 0 14px rgba(88,250,253,0.4), 0 3px 0 #010224, inset 0 1px 0 rgba(88,250,253,0.15)"
+              : "0 3px 0 #010224, inset 0 1px 0 rgba(88,250,253,0.1)",
+            fontFamily: '"Courier New", monospace',
+            textShadow: "0 0 6px #20E9FB80",
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 6m0 2a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2z" />
+            <path d="M6 12h4m-2 -2v4" />
+            <path d="M15 11l0 .01" />
+            <path d="M18 13l0 .01" />
           </svg>
           JOYSTICK
         </button>
@@ -65,7 +73,7 @@ export default function GamePage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 40%, #001a2e 0%, var(--bg-deep) 100%)",
+              "radial-gradient(ellipse 80% 60% at 50% 40%, #001a2e 0%, #010224 100%)",
           }}
         />
 
@@ -94,25 +102,31 @@ export default function GamePage() {
           <div
             className="h-full overflow-y-auto p-4"
             style={{
-              backgroundColor: "var(--bg-deep)",
-              borderLeft: "1px solid color-mix(in srgb, var(--neon-primary) 20%, transparent)",
-              boxShadow: "-4px 0 30px rgba(0,0,0,0.6)",
+              background: "linear-gradient(180deg, #0a1a5c, #011246)",
+              borderLeft: "3px solid #024DD6",
+              boxShadow: "-4px 0 30px rgba(0,0,0,0.6), inset 1px 0 0 rgba(88,250,253,0.08)",
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <span
                 className="text-xs font-bold tracking-widest uppercase"
-                style={{ color: "var(--neon-primary)" }}
+                style={{
+                  color: "#58FAFD",
+                  fontFamily: '"Courier New", monospace',
+                  textShadow: "0 0 8px #20E9FB80",
+                }}
               >
                 CONECTAR
               </span>
               <button
                 onClick={() => setShowPanel(false)}
-                className="w-7 h-7 rounded flex items-center justify-center text-sm cursor-pointer"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer"
                 style={{
-                  color: "var(--text-muted)",
-                  backgroundColor: "var(--bg-card)",
-                  border: "1px solid color-mix(in srgb, var(--text-muted) 20%, transparent)",
+                  color: "#58FAFD",
+                  background: "linear-gradient(180deg, #0a1a5c, #011246)",
+                  border: "2px solid #024DD6",
+                  boxShadow: "0 2px 0 #010224",
+                  fontFamily: '"Courier New", monospace',
                 }}
               >
                 ✕

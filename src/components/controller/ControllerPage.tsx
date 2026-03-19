@@ -6,14 +6,26 @@ import type { Button } from "@/types/gamepad";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// ─── Colors from NEOARCADE logo ─────────────────────────────────────────────
+// ─── Colors — 3D retro solid palette ────────────────────────────────────────
 const C = {
+  // Primary body
+  body: "#1a3a8a",       // Bold blue body (like the Polaroid)
+  bodyLight: "#2a55b8",  // Lighter face
+  bodyDark: "#0e2260",   // Shadow/underside
+  // D-pad & details
+  dpad: "#1a1a2e",       // Dark charcoal for D-pad
+  dpadFace: "#252540",   // Slightly lighter face
+  // Buttons
+  btnPink: "#e83a7d",    // Bold pink like the camera
+  btnPinkDark: "#b0285d",
+  btnYellow: "#f5c842",  // Yellow accent
+  btnYellowDark: "#c89e28",
+  // Accent
   cyan: "#58FAFD",
   cyanGlow: "#20E9FB",
-  blue: "#024DD6",
-  darkBlue: "#011246",
-  bg: "#010224",
-  black: "#000000",
+  // Base
+  bg: "#0d0d1a",
+  white: "#f0f0f5",
 } as const;
 
 // ─── ControlButton ─────────────────────────────────────────────────────────────
@@ -105,6 +117,14 @@ export function ControllerPage() {
   } = useGameStore();
 
   const [orientationLocked, setOrientationLocked] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Track fullscreen changes
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
 
   useEffect(() => {
     document.body.classList.add("controller-view");
@@ -254,13 +274,15 @@ export function ControllerPage() {
 
   return (
     <div className="pad-root">
-      {/* ── Fullscreen button ── */}
-      <button className="pad-fs-btn" onClick={handleFullscreen}>
-        ⛶ AMPLIAR
-      </button>
+      {/* ── Fullscreen button — hides when already fullscreen ── */}
+      {!isFullscreen && (
+        <button className="pad-fs-btn" onClick={handleFullscreen}>
+          ⛶ AMPLIAR
+        </button>
+      )}
 
       {/* ── Gamepad body ── */}
-      <div className="pad-body">
+      <div className={`pad-body${isFullscreen ? " pad-body-fs" : ""}`}>
         {/* ── Left: D-Pad (connected cross) ── */}
         <div className="pad-left">
           <div className="dpad">
@@ -324,10 +346,10 @@ export function ControllerPage() {
             <span
               className="pad-dot"
               style={{
-                backgroundColor: isConnected ? C.cyan : "#ff3366",
+                backgroundColor: isConnected ? "#44dd88" : C.btnPink,
                 boxShadow: isConnected
-                  ? `0 0 6px ${C.cyan}`
-                  : "0 0 6px #ff3366",
+                  ? "0 0 6px #44dd88"
+                  : `0 0 6px ${C.btnPink}`,
               }}
             />
           </div>
@@ -370,13 +392,17 @@ function DpadArrow({ dir }: { dir: "up" | "down" | "left" | "right" }) {
   const rotate = { up: 0, right: 90, down: 180, left: 270 }[dir];
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
-      fill="currentColor"
-      style={{ transform: `rotate(${rotate}deg)`, opacity: 0.9 }}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: `rotate(${rotate}deg)`, opacity: 0.85 }}
     >
-      <polygon points="12,4 20,18 4,18" />
+      <path d="M18 15L12 9L6 15" />
     </svg>
   );
 }
@@ -384,7 +410,7 @@ function DpadArrow({ dir }: { dir: "up" | "down" | "left" | "right" }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const padStyles = `
-  /* ── Root: fills entire screen ── */
+  /* ── Root ── */
   .pad-root {
     position: fixed;
     inset: 0;
@@ -394,7 +420,7 @@ const padStyles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: ${C.bg};
+    background: linear-gradient(160deg, #141428, ${C.bg});
     overflow: hidden;
     touch-action: none;
     user-select: none;
@@ -404,47 +430,54 @@ const padStyles = `
   /* ── Fullscreen button ── */
   .pad-fs-btn {
     position: fixed;
-    top: 8px;
-    right: 10px;
+    top: 10px;
+    right: 12px;
     z-index: 20;
     font-family: "Courier New", monospace;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: ${C.cyan};
-    background: ${C.darkBlue};
-    border: 1.5px solid ${C.blue};
-    border-radius: 6px;
-    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: ${C.white};
+    background: linear-gradient(180deg, ${C.btnPink}, ${C.btnPinkDark});
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
     cursor: pointer;
-    text-shadow: 0 0 6px ${C.cyanGlow}60;
-    box-shadow: 0 0 8px ${C.blue}40;
+    box-shadow:
+      0 4px 0 ${C.btnPinkDark},
+      0 6px 12px rgba(0,0,0,0.4);
     -webkit-tap-highlight-color: transparent;
   }
   .pad-fs-btn:active {
-    background: ${C.blue};
-    color: #fff;
-    box-shadow: 0 0 14px ${C.cyan};
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 ${C.btnPinkDark};
   }
 
-  /* ── Gamepad body ── */
+  /* ── Gamepad body — 3D retro solid ── */
   .pad-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 94%;
-    max-width: 720px;
-    height: 80%;
-    max-height: 320px;
-    background: linear-gradient(170deg, ${C.darkBlue}, ${C.bg});
-    border: 2.5px solid ${C.blue};
-    border-radius: 24px;
+    width: 92%;
+    max-width: 680px;
+    height: 72%;
+    max-height: 280px;
+    background: linear-gradient(170deg, ${C.bodyLight}, ${C.body});
+    border: 3px solid ${C.bodyDark};
+    border-radius: 28px;
     box-shadow:
-      0 0 18px ${C.blue}50,
-      0 0 40px ${C.blue}18,
-      inset 0 1px 0 ${C.blue}20;
+      0 6px 0 ${C.bodyDark},
+      0 10px 24px rgba(0,0,0,0.5),
+      inset 0 2px 0 rgba(255,255,255,0.08);
     padding: 0 4%;
     position: relative;
+  }
+  /* Fullscreen: expand */
+  .pad-body-fs {
+    width: 96%;
+    max-width: 800px;
+    height: 85%;
+    max-height: 360px;
   }
 
   /* ── Left section (D-Pad) ── */
@@ -455,51 +488,54 @@ const padStyles = `
     flex: 0 0 auto;
   }
 
-  /* ── D-Pad: connected cross shape ── */
+  /* ── D-Pad ── */
   .dpad {
     position: relative;
-    width: clamp(150px, 46vmin, 230px);
-    height: clamp(150px, 46vmin, 230px);
+    width: clamp(140px, 44vmin, 210px);
+    height: clamp(140px, 44vmin, 210px);
   }
 
-  /* Cross bars */
+  /* Cross bars — 3D effect */
   .dpad-cross-h, .dpad-cross-v {
     position: absolute;
-    background: linear-gradient(145deg, #0a1a5c, ${C.darkBlue});
-    border: 2.5px solid ${C.blue};
-    box-shadow: 0 0 10px ${C.blue}50, inset 0 1px 0 ${C.blue}30;
+    background: linear-gradient(145deg, ${C.dpadFace}, ${C.dpad});
+    border: 2px solid #11112a;
+    box-shadow:
+      0 3px 0 #0a0a18,
+      inset 0 1px 0 rgba(255,255,255,0.06);
   }
   .dpad-cross-h {
     top: 50%;
     left: 0;
     right: 0;
-    height: 38%;
+    height: 36%;
     transform: translateY(-50%);
-    border-radius: 10px;
+    border-radius: 8px;
   }
   .dpad-cross-v {
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 38%;
+    width: 36%;
     transform: translateX(-50%);
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
-  /* Center dot */
+  /* Center dot — 3D inset */
   .dpad-center-dot {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 16px; height: 16px;
+    width: 14px; height: 14px;
     border-radius: 50%;
-    background: ${C.blue};
-    box-shadow: 0 0 8px ${C.cyan}80;
+    background: radial-gradient(circle, #333355, #1a1a30);
+    border: 1.5px solid #0a0a18;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
     z-index: 3;
     pointer-events: none;
   }
 
-  /* Touch zones */
+  /* Touch zones — LARGE, overlapping center for better sensitivity */
   .dpad-arm {
     position: absolute;
     display: flex;
@@ -507,43 +543,38 @@ const padStyles = `
     justify-content: center;
     background: transparent;
     border: none;
-    color: ${C.cyan};
+    color: rgba(255,255,255,0.5);
     cursor: pointer;
     z-index: 2;
     outline: none;
     -webkit-tap-highlight-color: transparent;
-    transition: background 0.06s;
+    touch-action: manipulation;
   }
 
   .dpad-up {
     top: 0; left: 50%;
     transform: translateX(-50%);
-    width: 38%; height: 42%;
-    border-radius: 10px 10px 0 0;
+    width: 36%; height: 52%;
   }
   .dpad-down {
     bottom: 0; left: 50%;
     transform: translateX(-50%);
-    width: 38%; height: 42%;
-    border-radius: 0 0 10px 10px;
+    width: 36%; height: 52%;
   }
   .dpad-left {
     left: 0; top: 50%;
     transform: translateY(-50%);
-    width: 42%; height: 38%;
-    border-radius: 10px 0 0 10px;
+    width: 52%; height: 36%;
   }
   .dpad-right {
     right: 0; top: 50%;
     transform: translateY(-50%);
-    width: 42%; height: 38%;
-    border-radius: 0 10px 10px 0;
+    width: 52%; height: 36%;
   }
 
   .dpad-arm:active {
-    background: ${C.blue}90;
-    box-shadow: 0 0 24px ${C.cyan}70, inset 0 0 14px ${C.cyan}40;
-    color: #fff;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
   }
 
   /* ── Center section ── */
@@ -559,41 +590,44 @@ const padStyles = `
 
   .pad-logo {
     font-family: "Courier New", monospace;
-    font-size: clamp(10px, 2.8vmin, 14px);
-    font-weight: 700;
-    letter-spacing: 0.35em;
-    color: ${C.cyan};
-    text-shadow: 0 0 10px ${C.cyanGlow}90;
+    font-size: clamp(9px, 2.5vmin, 13px);
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    color: ${C.white};
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
     text-transform: uppercase;
   }
 
   .pad-sys-row {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
   }
 
+  /* System buttons — 3D pill shape */
   .sys-btn {
-    height: 28px;
-    padding: 0 18px;
-    border-radius: 14px;
+    height: 32px;
+    padding: 0 22px;
+    border-radius: 16px;
     font-family: "Courier New", monospace;
-    font-size: clamp(8px, 2vmin, 11px);
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: ${C.cyan}cc;
-    background: linear-gradient(180deg, #0a1a5c, ${C.darkBlue});
-    border: 1.5px solid ${C.blue};
+    font-size: clamp(9px, 2.2vmin, 12px);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: ${C.white};
+    background: linear-gradient(180deg, #444466, #333350);
+    border: 2px solid #28283e;
     cursor: pointer;
-    transition: background 0.06s, box-shadow 0.06s, transform 0.06s;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    box-shadow:
+      0 3px 0 #1a1a2e,
+      inset 0 1px 0 rgba(255,255,255,0.1);
+    touch-action: manipulation;
   }
   .sys-btn:active {
-    transform: scale(0.92);
-    background: ${C.blue};
-    box-shadow: 0 0 12px ${C.cyan}90;
-    color: #fff;
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #1a1a2e;
+    background: #28283e;
   }
 
   .pad-indicators {
@@ -603,16 +637,17 @@ const padStyles = `
   }
   .pad-player {
     font-family: "Courier New", monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: ${C.cyan};
+    font-size: 13px;
+    font-weight: 800;
+    color: ${C.btnYellow};
     letter-spacing: 0.1em;
-    text-shadow: 0 0 6px ${C.cyanGlow}60;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.3);
   }
   .pad-dot {
-    width: 8px; height: 8px;
+    width: 10px; height: 10px;
     border-radius: 50%;
     flex-shrink: 0;
+    border: 1.5px solid rgba(0,0,0,0.2);
   }
 
   /* ── Right section (A / B) ── */
@@ -630,59 +665,56 @@ const padStyles = `
     transform: rotate(-12deg);
   }
 
+  /* Action buttons — chunky 3D circles */
   .action-btn {
-    width: clamp(68px, 22vmin, 110px);
-    height: clamp(68px, 22vmin, 110px);
+    width: clamp(66px, 20vmin, 105px);
+    height: clamp(66px, 20vmin, 105px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Courier New", monospace;
-    font-size: clamp(20px, 6vmin, 32px);
+    font-size: clamp(20px, 6vmin, 30px);
     font-weight: 900;
     cursor: pointer;
-    transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
     outline: none;
     -webkit-tap-highlight-color: transparent;
     border: 3px solid;
-    text-shadow: 0 0 8px currentColor;
+    touch-action: manipulation;
   }
 
   .btn-a {
-    color: ${C.cyan};
-    background: linear-gradient(145deg, #0a1a5c, ${C.darkBlue});
-    border-color: ${C.cyan};
+    color: ${C.white};
+    background: linear-gradient(145deg, ${C.btnPink}, ${C.btnPinkDark});
+    border-color: ${C.btnPinkDark};
     box-shadow:
-      0 0 14px ${C.cyan}60,
-      0 0 32px ${C.cyanGlow}25,
-      inset 0 2px 4px ${C.cyan}20;
+      0 5px 0 ${C.btnPinkDark},
+      0 8px 16px rgba(0,0,0,0.35),
+      inset 0 2px 0 rgba(255,255,255,0.15);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
   .btn-a:active {
-    transform: scale(0.88);
-    background: ${C.blue};
+    transform: translateY(4px);
     box-shadow:
-      0 0 24px ${C.cyan},
-      0 0 48px ${C.cyanGlow}70,
-      inset 0 0 14px ${C.cyan}40;
-    color: #fff;
+      0 1px 0 ${C.btnPinkDark},
+      inset 0 2px 6px rgba(0,0,0,0.3);
   }
 
   .btn-b {
-    color: ${C.blue};
-    background: linear-gradient(145deg, #0a1a5c, ${C.darkBlue});
-    border-color: ${C.blue};
+    color: ${C.white};
+    background: linear-gradient(145deg, ${C.btnYellow}, ${C.btnYellowDark});
+    border-color: ${C.btnYellowDark};
     box-shadow:
-      0 0 12px ${C.blue}50,
-      inset 0 2px 4px ${C.blue}20;
+      0 5px 0 ${C.btnYellowDark},
+      0 8px 16px rgba(0,0,0,0.35),
+      inset 0 2px 0 rgba(255,255,255,0.2);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
   .btn-b:active {
-    transform: scale(0.88);
-    background: ${C.blue};
+    transform: translateY(4px);
     box-shadow:
-      0 0 20px ${C.blue},
-      0 0 40px ${C.blue}60,
-      inset 0 0 12px ${C.cyan}30;
-    color: ${C.cyan};
+      0 1px 0 ${C.btnYellowDark},
+      inset 0 2px 6px rgba(0,0,0,0.3);
   }
 
   /* ── Status text ── */
@@ -694,7 +726,7 @@ const padStyles = `
     font-family: "Courier New", monospace;
     font-size: 9px;
     letter-spacing: 0.2em;
-    color: ${C.cyan}60;
+    color: rgba(255,255,255,0.25);
     z-index: 10;
   }
 
@@ -708,7 +740,7 @@ const padStyles = `
     touch-action: none;
   }
 
-  /* ── Portrait fallback: rotate the entire UI to landscape ── */
+  /* ── Portrait fallback ── */
   @media (orientation: portrait) {
     .pad-root {
       transform: rotate(90deg);

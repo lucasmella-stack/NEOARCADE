@@ -197,16 +197,17 @@ export function GameScreen() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-2 h-full">
+    <div className="relative h-full">
       {/* Pantalla principal — fills all available height */}
       <div
-        className="relative rounded-lg overflow-hidden scanlines flex-1 min-h-0"
+        className="relative rounded-lg overflow-hidden scanlines w-full h-full"
         style={{
           border:
-            "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
+            "2px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
           boxShadow:
-            "0 0 30px color-mix(in srgb, var(--neon-primary) 15%, transparent), inset 0 0 60px rgba(0,0,0,0.5)",
+            "0 0 30px color-mix(in srgb, var(--neon-primary) 15%, transparent), inset 0 0 60px rgba(0,0,0,0.5), 0 4px 0 #000, 0 6px 12px rgba(0,0,0,0.5)",
           backgroundColor: "#000",
+          borderRadius: 12,
         }}
       >
         {/* EmulatorJS container (siempre presente para ROM mode) */}
@@ -294,10 +295,13 @@ export function GameScreen() {
         )}
       </div>
 
-      {/* Controles compactos (overlay en la parte inferior) */}
+      {/* ── Game controls bar — overlaid at bottom ── */}
       <div
-        className="flex flex-wrap items-center gap-2 px-1 shrink-0"
-        style={{ minHeight: 36 }}
+        className="absolute bottom-0 left-0 right-0 flex flex-wrap items-center gap-2 px-3 z-20"
+        style={{
+          height: 42,
+          background: "linear-gradient(to top, rgba(1,2,36,0.95), rgba(1,2,36,0.7))",
+        }}
       >
         {/* Botón volver al menú (visible cuando hay un juego activo) */}
         {mode.type !== "menu" && (
