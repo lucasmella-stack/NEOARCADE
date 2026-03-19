@@ -1,16 +1,17 @@
-# [PROJECT_NAME] — AI Instructions
+# NEOARCADE — AI Instructions
 
-> Copilot lee este archivo automáticamente. Describe TU proyecto aquí.
+> Copilot lee este archivo automáticamente.
 
 ---
 
 ## Project Overview
 
-- **Name**: [PROJECT_NAME]
-- **Description**: [Qué hace este proyecto]
-- **Stack**: [Next.js 15 / FastAPI / etc.]
-- **DB**: [PostgreSQL / Redis / etc.]
-- **Hosting**: [Hetzner / AWS / etc.]
+- **Name**: NEOARCADE
+- **Description**: Consola retro open source que corre juegos 2D arcade en el navegador. Los móviles se conectan como joysticks vía WebSocket escaneando un QR. Sin instalar apps. 2 jugadores simultáneos.
+- **Stack**: Next.js 15 (App Router) + Socket.io + EmulatorJS
+- **Realtime**: Socket.io con rooms por sesión de juego
+- **Hosting**: Hetzner VPS (custom Next.js server)
+- **Package manager**: pnpm
 
 ---
 
@@ -18,30 +19,51 @@
 
 ```
 src/
-├── app/               # Pages & routes (Next.js App Router)
-│   ├── (auth)/        # Auth pages
-│   ├── (dashboard)/   # Main app pages
-│   └── api/           # API routes (BFF)
+├── app/
+│   ├── (game)/           # Pantalla principal: emulador + QR lobby
+│   │   └── page.tsx
+│   ├── controller/       # Vista móvil: joystick neon azul
+│   │   └── page.tsx
+│   └── api/
+│       └── socket/       # No se usa — Socket.io va en server.ts
 ├── components/
-│   ├── ui/            # shadcn/ui base components
-│   └── shared/        # Reusable components (2+ uses)
-├── lib/               # Utilities, configs, constants
-├── hooks/             # Custom React hooks
-├── types/             # Shared TypeScript types
-├── services/          # API clients, external services
-└── tests/             # Test files
+│   ├── emulator/         # Wrapper EmulatorJS
+│   ├── controller/       # Gamepad virtual (D-pad, A, B, Start)
+│   └── lobby/            # QR code + estado de jugadores
+├── lib/
+│   └── socket.ts         # Cliente Socket.io singleton
+├── hooks/
+│   └── useGamepad.ts     # Hook para input del controlador
+├── store/
+│   └── game.store.ts     # Zustand: room, players, estado
+└── types/
+    └── gamepad.ts        # Tipos de inputs y eventos
+server.ts                 # Custom Next.js server con Socket.io
 ```
 
 ---
 
 ## Key Decisions
 
-<!-- Documenta decisiones arquitectónicas importantes -->
+- **Emulador**: EmulatorJS — soporta NeoGeo (Metal Slug), Arcade, SNES, NES
+- **Realtime**: Socket.io en custom server (no API routes — necesita conexión persistente)
+- **Controller identity**: cada móvil se identifica como Player 1 o Player 2 según orden de conexión
+- **ROMs**: NO se distribuyen. El usuario las carga localmente. Solo se distribuye el engine.
+- **Styling**: Tailwind CSS 4. Tema neon: fondo oscuro #0a0a0f, azul neon #00d4ff, glow effects via box-shadow
+- **No auth**: sesiones anónimas por room ID (UUID)
+- **State management**: Zustand para estado de la sesión (room, players), Socket.io para eventos realtime
+- **Latencia objetivo**: < 50ms en LAN, < 150ms por internet
 
-- **State management**: Zustand para estado global, Server Components para data fetching
-- **Auth**: NextAuth.js con [provider]
-- **Styling**: Tailwind CSS 4 + shadcn/ui
-- **Validation**: Zod for forms and API inputs
+---
+
+## Input Events (Socket.io)
+
+```typescript
+// Móvil → Servidor → Pantalla
+{ type: "input", player: 1 | 2, button: Button, state: "pressed" | "released" }
+
+type Button = "up" | "down" | "left" | "right" | "a" | "b" | "start"
+```
 
 ---
 
@@ -49,9 +71,8 @@ src/
 
 ```bash
 # .env.local
-DATABASE_URL=postgresql://user:pass@localhost:5432/mydb
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_SOCKET_URL=http://localhost:3000
+PORT=3000
 ```
 
 ---
@@ -59,20 +80,23 @@ NEXTAUTH_URL=http://localhost:3000
 ## Commands
 
 ```bash
-pnpm dev              # Development server
-pnpm build            # Production build
-pnpm test             # Run Vitest
-pnpm test:e2e         # Run Playwright
+pnpm dev              # Desarrollo (custom server con tsx watch)
+pnpm build            # Build producción
+pnpm start            # Producción (node server.js)
+pnpm test             # Vitest
 pnpm lint             # ESLint
 pnpm typecheck        # TypeScript check
 ```
 
 ---
 
-## Conventions
+## Aesthetic (IMPORTANTE)
 
-- Feature-based folder structure
-- Server Components by default
-- Conventional commits required
-- Tests required for new features
-- No `any` in TypeScript
+- **Fondo**: `#0a0a0f` (negro azulado profundo)
+- **Neon primario**: `#00d4ff` (cyan eléctrico)
+- **Neon secundario**: `#0080ff` (azul eléctrico)
+- **Glow**: `box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff40`
+- **Botones**: bordes con glow, fondo semitransparente, presión con scale + glow intenso
+- **Fuente**: monospace / tecnológica
+- **D-pad**: forma de cruz con bordes redondeados, glow azul al tocar
+- **ROMs**: el usuario las sube, no se incluyen en el repo

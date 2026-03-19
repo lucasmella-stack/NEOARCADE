@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --neon-primary: #00d4ff;
+  --neon-secondary: #0080ff;
+  --neon-purple: #8000ff;
+  --bg-deep: #0a0a0f;
+  --bg-surface: #0f0f1a;
+  --bg-card: #13131f;
+  --text-primary: #e8f4ff;
+  --text-muted: #4a6b8a;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: "Courier New", "Lucida Console", monospace;
+  overscroll-behavior: none;
+}
+
+/* Evita scroll en mobile al usar el controller */
+body.controller-view {
+  overflow: hidden;
+  height: 100dvh;
+  width: 100dvw;
+}
+
+/* Glow utilities */
+.glow-primary {
+  box-shadow:
+    0 0 8px var(--neon-primary),
+    0 0 20px var(--neon-primary),
+    0 0 40px color-mix(in srgb, var(--neon-primary) 40%, transparent);
+}
+
+.glow-text-primary {
+  text-shadow:
+    0 0 8px var(--neon-primary),
+    0 0 20px var(--neon-primary);
+}
+
+.glow-secondary {
+  box-shadow:
+    0 0 8px var(--neon-secondary),
+    0 0 20px var(--neon-secondary),
+    0 0 40px color-mix(in srgb, var(--neon-secondary) 40%, transparent);
+}
+
+/* Scanlines retro effect */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}

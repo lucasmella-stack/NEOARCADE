@@ -2,12 +2,18 @@ node_modules/
 .next/
 dist/
 build/
+out/
 .env
 .env.local
 .env.*.local
 __pycache__/
 *.pyc
 .pytest_cache/
+# ROMs — nunca se commitean
+public/roms/
+*.rom
+*.zip
+pnpm-lock.yaml
 .mypy_cache/
 .ruff_cache/
 *.egg-info/

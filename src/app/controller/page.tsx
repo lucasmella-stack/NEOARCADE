@@ -1,0 +1,19 @@
+import type { Metadata, Viewport } from "next";
+import { ControllerPage } from "@/components/controller/ControllerPage";
+
+export const metadata: Metadata = {
+  title: "NEOARCADE — Controller",
+  description: "Joystick virtual para NEOARCADE",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0a0a0f",
+};
+
+export default function Controller() {
+  return <ControllerPage />;
+}
