@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { useGameStore } from "@/store/game.store";
+import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useState } from "react";
 
 export function Lobby() {
   const { roomId, connectedPlayers, isConnected } = useGameStore();
@@ -10,7 +10,13 @@ export function Lobby() {
 
   useEffect(() => {
     if (roomId && typeof window !== "undefined") {
-      const base = window.location.origin;
+      // Si hay URL pública configurada (ngrok / producción), usarla para el QR
+      // para que el móvil pueda alcanzar el servidor desde internet
+      const publicUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+      const base =
+        publicUrl && !publicUrl.includes("localhost")
+          ? publicUrl.replace(/\/$/, "")
+          : window.location.origin;
       setControllerUrl(`${base}/controller?room=${roomId}`);
     }
   }, [roomId]);

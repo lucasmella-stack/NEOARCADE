@@ -6,9 +6,21 @@ import type { Button } from "@/types/gamepad";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
+// ─── Colors from NEOARCADE logo ─────────────────────────────────────────────
+const C = {
+  cyan: "#58FAFD",
+  cyanGlow: "#20E9FB",
+  blue: "#024DD6",
+  darkBlue: "#011246",
+  bg: "#010224",
+  black: "#000000",
+} as const;
+
+// ─── ControlButton ─────────────────────────────────────────────────────────────
+
 interface ControlButtonProps {
   button: Button;
-  label: string;
+  label: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   onPress: (btn: Button) => void;
@@ -30,8 +42,7 @@ function ControlButton({
       e.preventDefault();
       if (!pressedRef.current) {
         pressedRef.current = true;
-        // Vibración háptica suave
-        if (navigator.vibrate) navigator.vibrate(15);
+        if (navigator.vibrate) navigator.vibrate(12);
         onPress(button);
       }
     },
@@ -51,12 +62,11 @@ function ControlButton({
 
   return (
     <button
-      className={`control-btn select-none ${className}`}
+      className={`ctrl-btn ${className}`}
       style={style}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
-      // Soporte mouse para desarrollo
       onMouseDown={(e) => {
         e.preventDefault();
         if (!pressedRef.current) {
@@ -69,18 +79,20 @@ function ControlButton({
         pressedRef.current = false;
         onRelease(button);
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={() => {
         if (pressedRef.current) {
           pressedRef.current = false;
           onRelease(button);
         }
       }}
-      aria-label={label}
+      aria-label={String(button)}
     >
       {label}
     </button>
   );
 }
+
+// ─── ControllerPage ────────────────────────────────────────────────────────────
 
 export function ControllerPage() {
   const searchParams = useSearchParams();
@@ -88,7 +100,6 @@ export function ControllerPage() {
     useGameStore();
 
   useEffect(() => {
-    // fix overflow en mobile
     document.body.classList.add("controller-view");
     return () => document.body.classList.remove("controller-view");
   }, []);
@@ -105,13 +116,8 @@ export function ControllerPage() {
       setConnected(true);
       socket.emit("join-room", roomId);
     });
-
     socket.on("disconnect", () => setConnected(false));
-
-    socket.on("player-assigned", (n: 1 | 2) => {
-      setPlayerNumber(n);
-    });
-
+    socket.on("player-assigned", (n: 1 | 2) => setPlayerNumber(n));
     socket.on("room-full", () => {
       alert("La sala está llena (máx. 2 jugadores)");
       socket.disconnect();
@@ -128,15 +134,20 @@ export function ControllerPage() {
 
   const press = useCallback((button: Button) => {
     const socket = getSocket();
-    if (socket.connected) {
-      socket.emit("input", { type: "input", button, state: "pressed" });
-    }
+    if (socket.connected) socket.emit("input", { type: "input", button, state: "pressed" });
   }, []);
 
   const release = useCallback((button: Button) => {
     const socket = getSocket();
-    if (socket.connected) {
-      socket.emit("input", { type: "input", button, state: "released" });
+    if (socket.connected) socket.emit("input", { type: "input", button, state: "released" });
+  }, []);
+
+  const handleFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
     }
   }, []);
 
@@ -145,16 +156,30 @@ export function ControllerPage() {
   if (!roomId) {
     return (
       <div
-        className="w-screen h-screen flex flex-col items-center justify-center gap-4"
-        style={{ backgroundColor: "var(--bg-deep)" }}
+        style={{
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+          backgroundColor: C.bg,
+        }}
       >
         <p
-          className="text-xl tracking-widest uppercase glow-text-primary"
-          style={{ color: "var(--neon-primary)" }}
+          style={{
+            fontSize: 20,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: C.cyan,
+            textShadow: `0 0 12px ${C.cyanGlow}`,
+            fontFamily: '"Courier New", monospace',
+          }}
         >
           NEOARCADE
         </p>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 13, color: "#556" }}>
           Escanea el QR desde la consola para conectarte
         </p>
       </div>
@@ -162,314 +187,401 @@ export function ControllerPage() {
   }
 
   return (
-    <div
-      className="w-screen h-[100dvh] flex flex-col items-center justify-between select-none overflow-hidden"
-      style={{ backgroundColor: "var(--bg-deep)", padding: "12px 8px" }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between w-full max-w-sm px-2">
-        <span
-          className="text-xs font-bold tracking-[0.3em] uppercase"
-          style={{ color: "var(--neon-primary)" }}
-        >
-          NEOARCADE
-        </span>
-        <div className="flex items-center gap-2">
-          {playerNumber && (
-            <span
-              className="text-xs font-bold tracking-wider px-2 py-0.5 rounded"
-              style={{
-                color: "var(--neon-primary)",
-                border: "1px solid color-mix(in srgb, var(--neon-primary) 40%, transparent)",
-                backgroundColor: "color-mix(in srgb, var(--neon-primary) 10%, transparent)",
-              }}
-            >
-              P{playerNumber}
-            </span>
-          )}
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{
-              backgroundColor: isConnected ? "var(--neon-primary)" : "#ff3366",
-              boxShadow: isConnected ? "0 0 8px var(--neon-primary)" : "0 0 8px #ff3366",
-            }}
-          />
+    <div className="pad-root">
+      {/* ── Gamepad body ── */}
+      <div className="pad-body">
+        {/* ── Left wing: D-Pad ── */}
+        <div className="pad-left">
+          <div className="dpad">
+            <ControlButton button="up" label={<DpadArrow dir="up" />} className="dpad-arm dpad-up" onPress={press} onRelease={release} />
+            <ControlButton button="right" label={<DpadArrow dir="right" />} className="dpad-arm dpad-right" onPress={press} onRelease={release} />
+            <ControlButton button="down" label={<DpadArrow dir="down" />} className="dpad-arm dpad-down" onPress={press} onRelease={release} />
+            <ControlButton button="left" label={<DpadArrow dir="left" />} className="dpad-arm dpad-left" onPress={press} onRelease={release} />
+            <div className="dpad-center" />
+          </div>
+        </div>
+
+        {/* ── Center: logo + system buttons ── */}
+        <div className="pad-center">
+          <span className="pad-logo">NEOARCADE</span>
+          <div className="pad-sys-row">
+            <ControlButton button="select" label="SELECT" className="sys-btn" onPress={press} onRelease={release} />
+            <ControlButton button="start" label="START" className="sys-btn" onPress={press} onRelease={release} />
+          </div>
+          <div className="pad-indicators">
+            {playerNumber && <span className="pad-player">P{playerNumber}</span>}
+            <span className="pad-dot" style={{
+              backgroundColor: isConnected ? C.cyan : "#ff3366",
+              boxShadow: isConnected ? `0 0 6px ${C.cyan}` : "0 0 6px #ff3366",
+            }} />
+          </div>
+        </div>
+
+        {/* ── Right wing: A / B buttons ── */}
+        <div className="pad-right">
+          <div className="ab-row">
+            <ControlButton button="b" label="B" className="action-btn btn-b" onPress={press} onRelease={release} />
+            <ControlButton button="a" label="A" className="action-btn btn-a" onPress={press} onRelease={release} />
+          </div>
         </div>
       </div>
 
-      {/* Zona de controles */}
-      <div className="flex items-center justify-between w-full max-w-sm px-2 flex-1 py-4">
-        {/* D-PAD izquierdo */}
-        <DPad onPress={press} onRelease={release} />
+      {/* ── Fullscreen toggle (outside the pad body) ── */}
+      <button className="pad-fs-btn" onClick={handleFullscreen} aria-label="Pantalla completa">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 3 21 3 21 9" />
+          <polyline points="9 21 3 21 3 15" />
+          <line x1="21" y1="3" x2="14" y2="10" />
+          <line x1="3" y1="21" x2="10" y2="14" />
+        </svg>
+      </button>
 
-        {/* Botón START central */}
-        <div className="flex flex-col items-center gap-3">
-          <ControlButton
-            button="select"
-            label="SEL"
-            onPress={press}
-            onRelease={release}
-            className="start-btn"
-          />
-          <ControlButton
-            button="start"
-            label="START"
-            onPress={press}
-            onRelease={release}
-            className="start-btn"
-          />
-        </div>
-
-        {/* Botones A / B derecha */}
-        <ActionButtons onPress={press} onRelease={release} />
+      {/* ── Connection status ── */}
+      <div className="pad-status">
+        {isConnected ? "● CONECTADO" : "○ CONECTANDO…"}
       </div>
 
-      {/* Footer hint */}
-      <p
-        className="text-xs tracking-wider pb-1"
-        style={{ color: "var(--text-muted)" }}
-      >
-        {isConnected ? "●  CONECTADO" : "○  CONECTANDO…"}
-      </p>
-
-      {/* Estilos inline del controller */}
-      <style>{controllerStyles}</style>
+      <style>{padStyles}</style>
     </div>
   );
 }
 
-// ─── D-Pad ────────────────────────────────────────────────────────────────────
+// ─── D-pad arrow SVG ──────────────────────────────────────────────────────────
 
-interface DPadProps {
-  onPress: (btn: Button) => void;
-  onRelease: (btn: Button) => void;
-}
-
-function DPad({ onPress, onRelease }: DPadProps) {
+function DpadArrow({ dir }: { dir: "up" | "down" | "left" | "right" }) {
+  const rotate = { up: 0, right: 90, down: 180, left: 270 }[dir];
   return (
-    <div className="dpad-wrapper">
-      {/* Fila superior */}
-      <div className="dpad-row">
-        <ControlButton
-          button="up"
-          label="▲"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="dpad-btn dpad-btn-top"
-        />
-      </div>
-      {/* Fila media */}
-      <div className="dpad-row">
-        <ControlButton
-          button="left"
-          label="◀"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="dpad-btn dpad-btn-left"
-        />
-        <div className="dpad-center" />
-        <ControlButton
-          button="right"
-          label="▶"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="dpad-btn dpad-btn-right"
-        />
-      </div>
-      {/* Fila inferior */}
-      <div className="dpad-row">
-        <ControlButton
-          button="down"
-          label="▼"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="dpad-btn dpad-btn-bottom"
-        />
-      </div>
-    </div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
+      style={{ transform: `rotate(${rotate}deg)`, opacity: 0.9 }}>
+      <polygon points="12,5 19,17 5,17" />
+    </svg>
   );
 }
 
-// ─── Action Buttons ───────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
-interface ActionButtonsProps {
-  onPress: (btn: Button) => void;
-  onRelease: (btn: Button) => void;
-}
-
-function ActionButtons({ onPress, onRelease }: ActionButtonsProps) {
-  return (
-    <div className="action-wrapper">
-      {/* B arriba-izquierda, A abajo-derecha (layout NeoGeo) */}
-      <div className="action-row action-row-top">
-        <ControlButton
-          button="b"
-          label="B"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="action-btn btn-b"
-        />
-      </div>
-      <div className="action-row action-row-bottom">
-        <ControlButton
-          button="a"
-          label="A"
-          onPress={onPress}
-          onRelease={onRelease}
-          className="action-btn btn-a"
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Estilos del controller ───────────────────────────────────────────────────
-
-const controllerStyles = `
-  /* ---- Variables ---- */
-  :root {
-    --btn-size: 64px;
-    --dpad-size: 58px;
-    --action-size: 68px;
+const padStyles = `
+  /* ── Root ── */
+  .pad-root {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: ${C.bg};
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  /* ---- Base button ---- */
-  .control-btn {
+  /* ── Gamepad body — horizontal rounded rectangle ── */
+  .pad-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 96vw;
+    max-width: 520px;
+    height: clamp(200px, 50vw, 280px);
+    background: linear-gradient(145deg, ${C.darkBlue}, ${C.bg});
+    border: 2.5px solid ${C.blue};
+    border-radius: 24px 24px 40px 40px;
+    box-shadow:
+      0 0 20px ${C.blue}60,
+      0 0 60px ${C.blue}20,
+      inset 0 1px 0 ${C.blue}40,
+      inset 0 -2px 6px ${C.black}80;
+    padding: 0 14px;
+    position: relative;
+  }
+
+  /* ── Left section (D-Pad) ── */
+  .pad-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  /* ── D-Pad: cross shape with absolute positioning ── */
+  .dpad {
+    position: relative;
+    width: 130px;
+    height: 130px;
+  }
+
+  .dpad-arm {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${C.darkBlue};
+    border: 2px solid ${C.blue};
+    color: ${C.cyan};
+    cursor: pointer;
+    transition: background 0.05s, box-shadow 0.05s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dpad-up {
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 44px; height: 44px;
+    border-radius: 10px 10px 3px 3px;
+  }
+  .dpad-down {
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 44px; height: 44px;
+    border-radius: 3px 3px 10px 10px;
+  }
+  .dpad-left {
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 44px; height: 44px;
+    border-radius: 10px 3px 3px 10px;
+  }
+  .dpad-right {
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 44px; height: 44px;
+    border-radius: 3px 10px 10px 3px;
+  }
+
+  .dpad-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px; height: 44px;
+    background: ${C.darkBlue};
+    border: 2px solid ${C.blue};
+    border-radius: 4px;
+    z-index: 0;
+  }
+
+  .dpad-arm:active {
+    background: ${C.blue};
+    box-shadow: 0 0 14px ${C.cyan}, 0 0 30px ${C.cyanGlow}40, inset 0 0 8px ${C.cyan}30;
+    color: #fff;
+  }
+
+  /* ── Center section ── */
+  .pad-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .pad-logo {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    color: ${C.cyan};
+    text-shadow: 0 0 8px ${C.cyanGlow}80;
+    text-transform: uppercase;
+  }
+
+  .pad-sys-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .sys-btn {
+    height: 22px;
+    padding: 0 14px;
+    border-radius: 11px;
+    font-family: "Courier New", monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: ${C.cyan}cc;
+    background: ${C.darkBlue};
+    border: 1.5px solid ${C.blue};
+    cursor: pointer;
+    transition: background 0.06s, box-shadow 0.06s, transform 0.06s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sys-btn:active {
+    transform: scale(0.92);
+    background: ${C.blue};
+    box-shadow: 0 0 10px ${C.cyan}80;
+    color: #fff;
+  }
+
+  .pad-indicators {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pad-player {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: ${C.cyan};
+    letter-spacing: 0.1em;
+  }
+  .pad-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Right section (A / B) ── */
+  .pad-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .ab-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    /* B slightly higher, A slightly lower — classic diagonal */
+    transform: rotate(-12deg);
+  }
+
+  .action-btn {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Courier New", monospace;
-    font-weight: 700;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    outline: none;
-    border: none;
-    transition: transform 0.06s ease, box-shadow 0.06s ease, background-color 0.06s ease;
-  }
-
-  /* ---- D-Pad layout ---- */
-  .dpad-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    width: calc(var(--dpad-size) * 3);
-  }
-  .dpad-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .dpad-center {
-    width: var(--dpad-size);
-    height: var(--dpad-size);
-    background: color-mix(in srgb, #00d4ff 6%, #0a0a0f);
-    border-radius: 4px;
-  }
-
-  /* ---- D-Pad buttons ---- */
-  .dpad-btn {
-    width: var(--dpad-size);
-    height: var(--dpad-size);
-    font-size: 18px;
-    color: #00d4ff;
-    background: color-mix(in srgb, #00d4ff 8%, #0f0f1a);
-    border: 1.5px solid color-mix(in srgb, #00d4ff 35%, transparent);
-  }
-  .dpad-btn-top    { border-radius: 10px 10px 4px 4px; }
-  .dpad-btn-bottom { border-radius: 4px 4px 10px 10px; }
-  .dpad-btn-left   { border-radius: 10px 4px 4px 10px; }
-  .dpad-btn-right  { border-radius: 4px 10px 10px 4px; }
-
-  .dpad-btn:active,
-  .dpad-btn.pressed {
-    transform: scale(0.92);
-    background: color-mix(in srgb, #00d4ff 25%, #0f0f1a);
-    box-shadow:
-      0 0 10px #00d4ff,
-      0 0 22px color-mix(in srgb, #00d4ff 50%, transparent),
-      inset 0 0 10px color-mix(in srgb, #00d4ff 20%, transparent);
-    border-color: #00d4ff;
-  }
-
-  /* ---- Action buttons layout ---- */
-  .action-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: calc(var(--action-size) + 32px);
-  }
-  .action-row {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-  }
-  .action-row-top  { padding-right: calc(var(--action-size) + 8px); }
-  .action-row-bottom { padding-left: calc(var(--action-size) + 8px); }
-
-  /* ---- Action buttons ---- */
-  .action-btn {
-    width: var(--action-size);
-    height: var(--action-size);
-    border-radius: 50%;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 900;
-    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    border: 3px solid;
+    text-shadow: 0 0 6px currentColor;
   }
 
   .btn-a {
-    color: #00d4ff;
-    background: color-mix(in srgb, #00d4ff 10%, #0f0f1a);
-    border: 2px solid color-mix(in srgb, #00d4ff 45%, transparent);
-    box-shadow: 0 0 12px color-mix(in srgb, #00d4ff 20%, transparent);
+    color: ${C.cyan};
+    background: ${C.darkBlue};
+    border-color: ${C.cyan};
+    box-shadow:
+      0 0 12px ${C.cyan}50,
+      0 0 30px ${C.cyanGlow}20,
+      inset 0 2px 4px ${C.cyan}15;
   }
   .btn-a:active {
     transform: scale(0.88);
-    background: color-mix(in srgb, #00d4ff 30%, #0f0f1a);
+    background: ${C.blue};
     box-shadow:
-      0 0 16px #00d4ff,
-      0 0 32px color-mix(in srgb, #00d4ff 50%, transparent),
-      inset 0 0 12px color-mix(in srgb, #00d4ff 25%, transparent);
-    border-color: #00d4ff;
+      0 0 20px ${C.cyan},
+      0 0 40px ${C.cyanGlow}60,
+      inset 0 0 12px ${C.cyan}30;
+    color: #fff;
   }
 
   .btn-b {
-    color: #0080ff;
-    background: color-mix(in srgb, #0080ff 10%, #0f0f1a);
-    border: 2px solid color-mix(in srgb, #0080ff 45%, transparent);
-    box-shadow: 0 0 12px color-mix(in srgb, #0080ff 20%, transparent);
+    color: ${C.blue};
+    background: ${C.darkBlue};
+    border-color: ${C.blue};
+    box-shadow:
+      0 0 10px ${C.blue}40,
+      inset 0 2px 4px ${C.blue}15;
   }
   .btn-b:active {
     transform: scale(0.88);
-    background: color-mix(in srgb, #0080ff 30%, #0f0f1a);
+    background: ${C.blue};
     box-shadow:
-      0 0 16px #0080ff,
-      0 0 32px color-mix(in srgb, #0080ff 50%, transparent),
-      inset 0 0 12px color-mix(in srgb, #0080ff 25%, transparent);
-    border-color: #0080ff;
+      0 0 18px ${C.blue},
+      0 0 36px ${C.blue}50,
+      inset 0 0 10px ${C.cyan}20;
+    color: ${C.cyan};
   }
 
-  /* ---- Start / Select ---- */
-  .start-btn {
-    width: 64px;
-    height: 24px;
-    border-radius: 12px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: color-mix(in srgb, #00d4ff 70%, #fff);
-    background: color-mix(in srgb, #00d4ff 6%, #0f0f1a);
-    border: 1.5px solid color-mix(in srgb, #00d4ff 30%, transparent);
-    box-shadow: 0 0 6px color-mix(in srgb, #00d4ff 15%, transparent);
+  /* ── Fullscreen button (bottom-right corner) ── */
+  .pad-fs-btn {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${C.cyan}80;
+    background: ${C.darkBlue};
+    border: 1.5px solid ${C.blue}60;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 10;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
   }
-  .start-btn:active {
-    transform: scale(0.9);
-    background: color-mix(in srgb, #00d4ff 20%, #0f0f1a);
-    box-shadow:
-      0 0 10px #00d4ff,
-      0 0 20px color-mix(in srgb, #00d4ff 40%, transparent);
-    border-color: #00d4ff;
+  .pad-fs-btn:active {
+    background: ${C.blue};
+    color: #fff;
+  }
+
+  /* ── Status text ── */
+  .pad-status {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: ${C.cyan}50;
+    z-index: 10;
+  }
+
+  /* ── Base button reset ── */
+  .ctrl-btn {
+    border: none;
+    outline: none;
+    padding: 0;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+
+  /* ── Responsive: larger screens ── */
+  @media (min-width: 480px) {
+    .pad-body {
+      height: clamp(240px, 45vw, 300px);
+      padding: 0 20px;
+    }
+    .dpad { width: 150px; height: 150px; }
+    .dpad-arm { width: 50px; height: 50px; }
+    .dpad-center { width: 50px; height: 50px; }
+    .action-btn { width: 78px; height: 78px; font-size: 24px; }
+    .ab-row { gap: 20px; }
+    .pad-logo { font-size: 11px; }
+    .sys-btn { font-size: 9px; height: 24px; padding: 0 16px; }
+  }
+
+  /* ── Very small screens ── */
+  @media (max-width: 360px) {
+    .pad-body {
+      height: clamp(180px, 55vw, 240px);
+      padding: 0 8px;
+      border-radius: 18px 18px 30px 30px;
+    }
+    .dpad { width: 110px; height: 110px; }
+    .dpad-arm { width: 38px; height: 38px; }
+    .dpad-center { width: 38px; height: 38px; }
+    .action-btn { width: 58px; height: 58px; font-size: 18px; }
+    .ab-row { gap: 12px; }
+    .pad-logo { font-size: 9px; }
   }
 `;

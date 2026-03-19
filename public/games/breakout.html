@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEOARCADE — BREAKOUT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
+canvas{display:block;image-rendering:pixelated}
+</style>
+</head>
+<body>
+<canvas id="g"></canvas>
+<script>
+(function(){
+  const C=document.getElementById("g");
+  const X=C.getContext("2d");
+
+  function resize(){
+    const w=window.innerWidth,h=window.innerHeight;
+    const s=Math.min(w/800,h/600);
+    C.width=800;C.height=600;
+    C.style.width=Math.floor(800*s)+"px";
+    C.style.height=Math.floor(600*s)+"px";
+  }
+  resize();
+  window.addEventListener("resize",resize);
+
+  const CYAN="#58FAFD",BLUE="#024DD6",BG="#0a0a0f",WHITE="#fff",RED="#ff4466",
+        VIOLET="#c080ff",ORANGE="#ff9040",GREEN="#44ff88";
+  const COLORS=[CYAN,BLUE,"#0080ff",VIOLET,RED,ORANGE];
+
+  // Paddle
+  const PW=100, PH=12, PY=570, PSPEED=8;
+  let px=350, pdx=0;
+
+  // Ball
+  const BR=6;
+  let bx,by,bvx,bvy;
+  let launched=false;
+
+  // Bricks
+  const BRICK_ROWS=6, BRICK_COLS=12, BW=60, BH=18, BRICK_GAP=4, BRICK_OFFSET_X=34, BRICK_OFFSET_Y=50;
+  let bricks=[];
+  let score=0, lives=3, level=1;
+  let state="menu"; // menu | playing | gameover | cleared
+
+  function initBricks(){
+    bricks=[];
+    for(let r=0;r<BRICK_ROWS;r++){
+      for(let c=0;c<BRICK_COLS;c++){
+        bricks.push({
+          x:BRICK_OFFSET_X+c*(BW+BRICK_GAP),
+          y:BRICK_OFFSET_Y+r*(BH+BRICK_GAP),
+          w:BW, h:BH,
+          color:COLORS[r%COLORS.length],
+          alive:true,
+          points:(BRICK_ROWS-r)*10
+        });
+      }
+    }
+  }
+
+  function resetBall(){
+    bx=px+PW/2; by=PY-BR-2;
+    bvx=0; bvy=0;
+    launched=false;
+  }
+
+  function launchBall(){
+    if(launched) return;
+    launched=true;
+    const angle=-Math.PI/2+(Math.random()*0.6-0.3);
+    const spd=5+level*0.5;
+    bvx=Math.cos(angle)*spd;
+    bvy=Math.sin(angle)*spd;
+  }
+
+  function initGame(){
+    score=0; lives=3; level=1;
+    px=350;
+    initBricks();
+    resetBall();
+  }
+  initGame();
+
+  // Input
+  const keys={};
+  const padInput={left:false,right:false};
+
+  document.addEventListener("keydown",e=>{
+    keys[e.code]=true;
+    if(state==="menu"){state="playing";initGame();}
+    if(state==="gameover"||state==="cleared"){state="playing";initGame();return;}
+    if(!launched&&(e.code==="Space"||e.code==="KeyZ"||e.code==="KeyX")) launchBall();
+  });
+  document.addEventListener("keyup",e=>{keys[e.code]=false;});
+
+  window.addEventListener("message",e=>{
+    const d=e.data;
+    if(d&&d.type==="neoarcade-input"){
+      const pressed=d.state==="pressed";
+      if(d.button==="left") padInput.left=pressed;
+      if(d.button==="right") padInput.right=pressed;
+      if(state==="menu"&&pressed){state="playing";initGame();}
+      if((state==="gameover"||state==="cleared")&&d.button==="start"&&pressed){state="playing";initGame();return;}
+      if(!launched&&pressed&&(d.button==="a"||d.button==="b")) launchBall();
+    }
+  });
+
+  function update(){
+    if(state!=="playing") return;
+
+    // Paddle
+    pdx=0;
+    if(keys["ArrowLeft"]||keys["KeyA"]||padInput.left) pdx=-PSPEED;
+    if(keys["ArrowRight"]||keys["KeyD"]||padInput.right) pdx=PSPEED;
+    px+=pdx;
+    px=Math.max(0,Math.min(800-PW,px));
+
+    if(!launched){
+      bx=px+PW/2; by=PY-BR-2;
+      return;
+    }
+
+    // Ball
+    bx+=bvx; by+=bvy;
+
+    // Walls
+    if(bx-BR<0){bx=BR;bvx=-bvx;}
+    if(bx+BR>800){bx=800-BR;bvx=-bvx;}
+    if(by-BR<0){by=BR;bvy=-bvy;}
+
+    // Bottom — lose life
+    if(by+BR>600){
+      lives--;
+      if(lives<=0){
+        state="gameover";
+      } else {
+        resetBall();
+      }
+      return;
+    }
+
+    // Paddle collision
+    if(bvy>0 && by+BR>=PY && by+BR<=PY+PH && bx>=px && bx<=px+PW){
+      bvy=-Math.abs(bvy);
+      const hit=(bx-(px+PW/2))/(PW/2);
+      bvx=hit*6;
+      by=PY-BR;
+      // Speed up slightly
+      const spd=Math.sqrt(bvx*bvx+bvy*bvy);
+      const maxSpd=10+level;
+      if(spd<maxSpd){
+        bvx*=1.02; bvy*=1.02;
+      }
+    }
+
+    // Brick collision
+    for(const b of bricks){
+      if(!b.alive) continue;
+      if(bx+BR>b.x && bx-BR<b.x+b.w && by+BR>b.y && by-BR<b.y+b.h){
+        b.alive=false;
+        score+=b.points;
+        // Determine bounce direction
+        const overlapLeft=bx+BR-b.x;
+        const overlapRight=b.x+b.w-(bx-BR);
+        const overlapTop=by+BR-b.y;
+        const overlapBottom=b.y+b.h-(by-BR);
+        const minOverlap=Math.min(overlapLeft,overlapRight,overlapTop,overlapBottom);
+        if(minOverlap===overlapTop||minOverlap===overlapBottom) bvy=-bvy;
+        else bvx=-bvx;
+        break;
+      }
+    }
+
+    // Check if all bricks cleared
+    if(bricks.every(b=>!b.alive)){
+      level++;
+      initBricks();
+      resetBall();
+    }
+  }
+
+  function draw(){
+    X.fillStyle=BG;
+    X.fillRect(0,0,800,600);
+
+    if(state==="menu"){
+      X.fillStyle=CYAN;
+      X.font="bold 48px monospace";
+      X.textAlign="center";
+      X.fillText("BREAKOUT",400,220);
+      X.font="16px monospace";
+      X.fillStyle=WHITE;
+      X.fillText("← →  MOVE  |  A / SPACE  LAUNCH",400,280);
+      X.fillStyle=CYAN+"90";
+      X.fillText("PRESS ANY KEY OR BUTTON TO START",400,340);
+      return;
+    }
+
+    // Bricks
+    for(const b of bricks){
+      if(!b.alive) continue;
+      X.shadowColor=b.color;
+      X.shadowBlur=6;
+      X.fillStyle=b.color;
+      X.fillRect(b.x,b.y,b.w,b.h);
+      // Inner highlight
+      X.fillStyle="#ffffff20";
+      X.fillRect(b.x,b.y,b.w,3);
+    }
+    X.shadowBlur=0;
+
+    // Paddle
+    X.shadowColor=CYAN;
+    X.shadowBlur=14;
+    X.fillStyle=CYAN;
+    X.beginPath();
+    X.roundRect(px,PY,PW,PH,6);
+    X.fill();
+    X.shadowBlur=0;
+
+    // Ball
+    X.shadowColor=WHITE;
+    X.shadowBlur=16;
+    X.fillStyle=WHITE;
+    X.beginPath();
+    X.arc(bx,by,BR,0,Math.PI*2);
+    X.fill();
+    X.shadowBlur=0;
+
+    // HUD
+    X.fillStyle=CYAN;
+    X.font="bold 18px monospace";
+    X.textAlign="left";
+    X.fillText("SCORE: "+score,20,28);
+    X.textAlign="center";
+    X.fillText("LEVEL "+level,400,28);
+    X.textAlign="right";
+    X.fillStyle=RED;
+    X.fillText("♥".repeat(lives),780,28);
+
+    if(!launched && state==="playing"){
+      X.fillStyle=CYAN+"80";
+      X.font="14px monospace";
+      X.textAlign="center";
+      X.fillText("PRESS A / SPACE TO LAUNCH",400,500);
+    }
+
+    if(state==="gameover"){
+      X.fillStyle="#000a";
+      X.fillRect(0,0,800,600);
+      X.fillStyle=RED;
+      X.font="bold 40px monospace";
+      X.textAlign="center";
+      X.fillText("GAME OVER",400,260);
+      X.fillStyle=CYAN;
+      X.font="bold 28px monospace";
+      X.fillText("SCORE: "+score,400,310);
+      X.font="16px monospace";
+      X.fillStyle=WHITE;
+      X.fillText("PRESS ENTER OR START TO PLAY AGAIN",400,370);
+    }
+  }
+
+  function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

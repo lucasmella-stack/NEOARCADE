@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch server.ts",
+    "tunnel": "node dev-tunnel.mjs",
     "build": "next build",
     "start": "node server.js",
     "lint": "next lint",
