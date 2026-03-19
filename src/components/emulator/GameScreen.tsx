@@ -29,6 +29,15 @@ const ARCADE_GAMES: ArcadeGame[] = [
     icon: "🔫",
   },
   {
+    id: "sf",
+    name: "STREET FIGHTER",
+    description: "Pelea cuerpo a cuerpo. Puñetazos, patadas y hadouken.",
+    src: "/games/sf/index.html",
+    players: "1P",
+    color: "#ff4422",
+    icon: "🥊",
+  },
+  {
     id: "mario",
     name: "MARIO",
     description: "Plataformas clásico con salto, carrera y tuberías.",

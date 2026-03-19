@@ -105,6 +105,93 @@ function ControlButton({
   );
 }
 
+// ─── DpadController — supports drag between directions ─────────────────────────
+
+function DpadController({
+  onPress,
+  onRelease,
+}: {
+  onPress: (btn: Button) => void;
+  onRelease: (btn: Button) => void;
+}) {
+  const dpadRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<Set<string>>(new Set());
+
+  const getDirections = useCallback(
+    (touch: { clientX: number; clientY: number }): Set<string> => {
+      const el = dpadRef.current;
+      if (!el) return new Set();
+      const rect = el.getBoundingClientRect();
+      const x = (touch.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
+      const y = (touch.clientY - rect.top) / rect.height - 0.5;
+      const deadzone = 0.08;
+      const dirs = new Set<string>();
+      if (y < -deadzone) dirs.add("up");
+      if (y > deadzone) dirs.add("down");
+      if (x < -deadzone) dirs.add("left");
+      if (x > deadzone) dirs.add("right");
+      return dirs;
+    },
+    [],
+  );
+
+  const sync = useCallback(
+    (dirs: Set<string>) => {
+      const prev = activeRef.current;
+      for (const btn of prev) {
+        if (!dirs.has(btn)) onRelease(btn as Button);
+      }
+      for (const btn of dirs) {
+        if (!prev.has(btn)) {
+          if (navigator.vibrate) navigator.vibrate(8);
+          onPress(btn as Button);
+        }
+      }
+      activeRef.current = new Set(dirs);
+    },
+    [onPress, onRelease],
+  );
+
+  const handleTouch = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 0) {
+        sync(new Set());
+        return;
+      }
+      sync(getDirections(e.touches[0]));
+    },
+    [getDirections, sync],
+  );
+
+  return (
+    <div
+      ref={dpadRef}
+      className="dpad"
+      onTouchStart={handleTouch}
+      onTouchMove={handleTouch}
+      onTouchEnd={handleTouch}
+      onTouchCancel={handleTouch}
+    >
+      <div className="dpad-cross-h" />
+      <div className="dpad-cross-v" />
+      <div className="dpad-arrow dpad-arr-up">
+        <DpadArrow dir="up" />
+      </div>
+      <div className="dpad-arrow dpad-arr-right">
+        <DpadArrow dir="right" />
+      </div>
+      <div className="dpad-arrow dpad-arr-down">
+        <DpadArrow dir="down" />
+      </div>
+      <div className="dpad-arrow dpad-arr-left">
+        <DpadArrow dir="left" />
+      </div>
+      <div className="dpad-center-dot" />
+    </div>
+  );
+}
+
 // ─── ControllerPage ────────────────────────────────────────────────────────────
 
 export function ControllerPage() {
@@ -308,39 +395,7 @@ export function ControllerPage() {
       <div className={`pad-body${isFullscreen ? " pad-body-fs" : ""}`}>
         {/* ── Left: D-Pad (connected cross) ── */}
         <div className="pad-left">
-          <div className="dpad">
-            <div className="dpad-cross-h" />
-            <div className="dpad-cross-v" />
-            <ControlButton
-              button="up"
-              label={<DpadArrow dir="up" />}
-              className="dpad-arm dpad-up"
-              onPress={press}
-              onRelease={release}
-            />
-            <ControlButton
-              button="right"
-              label={<DpadArrow dir="right" />}
-              className="dpad-arm dpad-right"
-              onPress={press}
-              onRelease={release}
-            />
-            <ControlButton
-              button="down"
-              label={<DpadArrow dir="down" />}
-              className="dpad-arm dpad-down"
-              onPress={press}
-              onRelease={release}
-            />
-            <ControlButton
-              button="left"
-              label={<DpadArrow dir="left" />}
-              className="dpad-arm dpad-left"
-              onPress={press}
-              onRelease={release}
-            />
-            <div className="dpad-center-dot" />
-          </div>
+          <DpadController onPress={press} onRelease={release} />
         </div>
 
         {/* ── Center: logo + system buttons ── */}
@@ -456,6 +511,16 @@ function DpadArrow({ dir }: { dir: "up" | "down" | "left" | "right" }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const padStyles = `
+  /* ── Base button reset — MUST be first so specific styles override ── */
+  .ctrl-btn {
+    border: none;
+    outline: none;
+    padding: 0;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+
   /* ── Root ── */
   .pad-root {
     position: fixed;
@@ -583,45 +648,30 @@ const padStyles = `
   }
 
   /* Touch zones — LARGE, overlapping center for better sensitivity */
-  .dpad-arm {
+  .dpad-arrow {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: none;
     color: rgba(255,255,255,0.5);
-    cursor: pointer;
-    z-index: 2;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    pointer-events: none;
   }
 
-  .dpad-up {
-    top: 0; left: 50%;
+  .dpad-arr-up {
+    top: 6%; left: 50%;
     transform: translateX(-50%);
-    width: 36%; height: 46%;
   }
-  .dpad-down {
-    bottom: 0; left: 50%;
+  .dpad-arr-down {
+    bottom: 6%; left: 50%;
     transform: translateX(-50%);
-    width: 36%; height: 46%;
   }
-  .dpad-left {
-    left: 0; top: 50%;
+  .dpad-arr-left {
+    left: 6%; top: 50%;
     transform: translateY(-50%);
-    width: 46%; height: 36%;
   }
-  .dpad-right {
-    right: 0; top: 50%;
+  .dpad-arr-right {
+    right: 6%; top: 50%;
     transform: translateY(-50%);
-    width: 46%; height: 36%;
-  }
-
-  .dpad-arm:active {
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.85);
   }
 
   /* ── Center section ── */
@@ -828,16 +878,6 @@ const padStyles = `
     letter-spacing: 0.2em;
     color: rgba(255,255,255,0.25);
     z-index: 10;
-  }
-
-  /* ── Base button reset ── */
-  .ctrl-btn {
-    border: none;
-    outline: none;
-    padding: 0;
-    background: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: none;
   }
 
   /* ── Portrait fallback ── */

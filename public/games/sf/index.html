@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>NEOARCADE — METAL SLUG</title>
+    <title>NEOARCADE — STREET FIGHTER</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <style>
       *,
       *::before,
@@ -23,27 +25,49 @@
         align-items: center;
         justify-content: center;
       }
-      canvas {
-        display: block;
-        width: 100vw !important;
-        height: auto !important;
-        max-height: 100vh;
-        object-fit: contain;
+      h1,
+      h2,
+      ul {
+        display: none;
+      }
+      #field {
+        transform-origin: center center;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
       }
     </style>
   </head>
   <body>
-    <script src="lib/phaser.js"></script>
-    <script src="init_app.js"></script>
-    <script src="ledges.js"></script>
-    <script src="models/background_model.js"></script>
+    <div id="field">
+      <div id="ch1" class="character"></div>
+      <div id="ch2" class="character"></div>
+    </div>
+
+    <script src="js/game.js"></script>
     <script>
-      // ── NEOARCADE Joystick Bridge ─────────────────────────────────────────
-      // Arrow keys: left=37 right=39 up=38 down=40
-      // A button → D key (68) = saltar
-      // B button → A key (65) = disparar
+      // ── Scale field to fit viewport ──────────────────────────────────────
+      (function () {
+        var field = document.getElementById("field");
+        function scaleField() {
+          var fw = 621,
+            fh = 224;
+          var sx = window.innerWidth / fw;
+          var sy = window.innerHeight / fh;
+          var s = Math.min(sx, sy);
+          field.style.transform = "scale(" + s + ")";
+        }
+        scaleField();
+        window.addEventListener("resize", scaleField);
+      })();
+
+      // ── Initialize game ─────────────────────────────────────────────────
+      $(document).ready(function () {
+        var a = new PlayGround("ch1");
+        a.initialize();
+        setInterval(a.mainLoop, 200);
+      });
+
+      // ── NEOARCADE Joystick Bridge ───────────────────────────────────────
       (function () {
         var activeKeys = {};
 
@@ -85,10 +109,10 @@
             right: 39,
             up: 38,
             down: 40,
-            a: 68, // D = jump
-            b: 65, // A = fire
-            x: 68, // D = jump (alt)
-            y: 65, // A = fire (alt)
+            a: 65, // A = punch
+            b: 83, // S = kick
+            x: 68, // D = beam
+            y: 70, // F = roundhouse
           };
 
           var code = MAP[data.button];
@@ -97,6 +121,5 @@
         });
       })();
     </script>
-    <script src="init_game.js"></script>
   </body>
 </html>
