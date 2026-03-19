@@ -124,8 +124,11 @@ export function ControllerPage() {
   useEffect(() => {
     const onFsChange = () =>
       setIsFullscreen(
-        !!(document.fullscreenElement ||
-          (document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement),
+        !!(
+          document.fullscreenElement ||
+          (document as Document & { webkitFullscreenElement?: Element })
+            .webkitFullscreenElement
+        ),
       );
     document.addEventListener("fullscreenchange", onFsChange);
     document.addEventListener("webkitfullscreenchange", onFsChange);
@@ -212,13 +215,18 @@ export function ControllerPage() {
 
   const handleFullscreen = useCallback(() => {
     const el = document.documentElement;
-    const isFullNow = !!(document.fullscreenElement ||
-      (document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement);
+    const isFullNow = !!(
+      document.fullscreenElement ||
+      (document as Document & { webkitFullscreenElement?: Element })
+        .webkitFullscreenElement
+    );
     if (!isFullNow) {
       // iOS Safari uses webkitRequestFullscreen
-      const doFs = (el.requestFullscreen ??
+      const doFs = (
+        el.requestFullscreen ??
         (el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> })
-          .webkitRequestFullscreen)?.bind(el);
+          .webkitRequestFullscreen
+      )?.bind(el);
       doFs?.()
         .then(() => {
           try {
@@ -232,10 +240,16 @@ export function ControllerPage() {
         })
         .catch(() => {});
     } else {
-      const doExit = (document.exitFullscreen ??
+      const doExit = (
+        document.exitFullscreen ??
         (document as Document & { webkitExitFullscreen?: () => void })
-          .webkitExitFullscreen)?.bind(document);
-      try { doExit?.(); } catch { /* ignore */ }
+          .webkitExitFullscreen
+      )?.bind(document);
+      try {
+        doExit?.();
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -280,7 +294,10 @@ export function ControllerPage() {
       {!isFullscreen && (
         <button
           className="pad-fs-btn"
-          onTouchStart={(e) => { e.preventDefault(); handleFullscreen(); }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleFullscreen();
+          }}
           onClick={handleFullscreen}
         >
           ⛶ AMPLIAR
@@ -328,7 +345,13 @@ export function ControllerPage() {
 
         {/* ── Center: logo + system buttons ── */}
         <div className="pad-center">
-          <Image src="/logo.webp" alt="NEOARCADE" width={28} height={28} className="pad-center-logo" />
+          <Image
+            src="/logo.webp"
+            alt="NEOARCADE"
+            width={28}
+            height={28}
+            className="pad-center-logo"
+          />
           <span className="pad-logo">NEOARCADE</span>
           <div className="pad-sys-row">
             <ControlButton
@@ -362,20 +385,36 @@ export function ControllerPage() {
           </div>
         </div>
 
-        {/* ── Right: A / B buttons ── */}
+        {/* ── Right: A / B / X / Y — SNES diamond ── */}
         <div className="pad-right">
-          <div className="ab-row">
+          <div className="abxy-diamond">
+            <ControlButton
+              button="x"
+              label="X"
+              className="action-btn btn-x"
+              onPress={press}
+              onRelease={release}
+            />
+            <div className="abxy-mid">
+              <ControlButton
+                button="y"
+                label="Y"
+                className="action-btn btn-y"
+                onPress={press}
+                onRelease={release}
+              />
+              <ControlButton
+                button="a"
+                label="A"
+                className="action-btn btn-a"
+                onPress={press}
+                onRelease={release}
+              />
+            </div>
             <ControlButton
               button="b"
               label="B"
               className="action-btn btn-b"
-              onPress={press}
-              onRelease={release}
-            />
-            <ControlButton
-              button="a"
-              label="A"
-              className="action-btn btn-a"
               onPress={press}
               onRelease={release}
             />
@@ -667,7 +706,7 @@ const padStyles = `
     border: 1.5px solid rgba(0,0,0,0.2);
   }
 
-  /* ── Right section (A / B) ── */
+  /* ── Right section (A / B / X / Y) ── */
   .pad-right {
     display: flex;
     align-items: center;
@@ -675,23 +714,31 @@ const padStyles = `
     flex: 0 0 auto;
   }
 
-  .ab-row {
+  /* SNES-style diamond: X on top, Y-A in middle row, B on bottom */
+  .abxy-diamond {
     display: flex;
-    gap: 5vmin;
+    flex-direction: column;
     align-items: center;
+    gap: clamp(2px, 1vmin, 6px);
     transform: rotate(-12deg);
+  }
+
+  .abxy-mid {
+    display: flex;
+    gap: clamp(2px, 1vmin, 6px);
+    align-items: center;
   }
 
   /* Action buttons — chunky 3D circles */
   .action-btn {
-    width: clamp(76px, 23vmin, 120px);
-    height: clamp(76px, 23vmin, 120px);
+    width: clamp(58px, 17vmin, 88px);
+    height: clamp(58px, 17vmin, 88px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Courier New", monospace;
-    font-size: clamp(20px, 6vmin, 30px);
+    font-size: clamp(15px, 4.5vmin, 24px);
     font-weight: 900;
     cursor: pointer;
     outline: none;
@@ -705,13 +752,13 @@ const padStyles = `
     background: linear-gradient(145deg, ${C.btnPink}, ${C.btnPinkDark});
     border-color: ${C.btnPinkDark};
     box-shadow:
-      0 5px 0 ${C.btnPinkDark},
-      0 8px 16px rgba(0,0,0,0.35),
+      0 4px 0 ${C.btnPinkDark},
+      0 6px 12px rgba(0,0,0,0.35),
       inset 0 2px 0 rgba(255,255,255,0.15);
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
   .btn-a:active {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow:
       0 1px 0 ${C.btnPinkDark},
       inset 0 2px 6px rgba(0,0,0,0.3);
@@ -722,15 +769,51 @@ const padStyles = `
     background: linear-gradient(145deg, ${C.btnYellow}, ${C.btnYellowDark});
     border-color: ${C.btnYellowDark};
     box-shadow:
-      0 5px 0 ${C.btnYellowDark},
-      0 8px 16px rgba(0,0,0,0.35),
+      0 4px 0 ${C.btnYellowDark},
+      0 6px 12px rgba(0,0,0,0.35),
       inset 0 2px 0 rgba(255,255,255,0.2);
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
   .btn-b:active {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow:
       0 1px 0 ${C.btnYellowDark},
+      inset 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* X — azul (like SNES) */
+  .btn-x {
+    color: ${C.white};
+    background: linear-gradient(145deg, #4488ff, #2255cc);
+    border-color: #2255cc;
+    box-shadow:
+      0 4px 0 #2255cc,
+      0 6px 12px rgba(0,0,0,0.35),
+      inset 0 2px 0 rgba(255,255,255,0.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .btn-x:active {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 #2255cc,
+      inset 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  /* Y — verde (like SNES) */
+  .btn-y {
+    color: ${C.white};
+    background: linear-gradient(145deg, #44cc66, #28884a);
+    border-color: #28884a;
+    box-shadow:
+      0 4px 0 #28884a,
+      0 6px 12px rgba(0,0,0,0.35),
+      inset 0 2px 0 rgba(255,255,255,0.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .btn-y:active {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 #28884a,
       inset 0 2px 6px rgba(0,0,0,0.3);
   }
 

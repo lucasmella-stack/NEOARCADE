@@ -5,6 +5,8 @@ export const Button = {
   Right: "right",
   A: "a",
   B: "b",
+  X: "x",
+  Y: "y",
   Start: "start",
   Select: "select",
 } as const;

@@ -55,32 +55,18 @@ export default function GamePage() {
           href={sponsorUrl}
           target="_blank"
           rel="noreferrer"
-          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2 hover:opacity-90 active:scale-95"
+          className="h-9 px-4 rounded-lg text-sm font-bold cursor-pointer transition-all flex items-center gap-2 hover:brightness-110 active:scale-95"
           style={{
-            background: "#000000",
+            background: "#FF5E5B",
             color: "#ffffff",
-            border: "2px solid #434343",
-            boxShadow: "0 2px 0 #000",
-            fontFamily: '"Courier New", monospace',
+            border: "none",
+            boxShadow: "0 2px 0 #c93c3a",
+            fontFamily: '"Segoe UI", sans-serif',
+            letterSpacing: "0.01em",
           }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M19.5 12.572l-.536 .53m-7.91 5.96l-6.554 -6.489a5 5 0 1 1 7.5 -6.567a5 5 0 1 1 7.5 6.572" />
-            <path d="M20 21l2 -2l-2 -2" />
-            <path d="M17 17l-2 2l2 2" />
-          </svg>
-          <span className="hidden sm:inline">SPONSOR</span>
+          <span aria-hidden="true">☕</span>
+          <span className="hidden sm:inline">Regálame un café</span>
         </a>
 
         {/* Botón abrir QR panel — gamepad icon */}

@@ -122,6 +122,12 @@
           if (data.button === "b") {
             return pressed ? press(90, "z") : release(90, "z");
           }
+          if (data.button === "x") {
+            return pressed ? press(88, "x") : release(88, "x"); // saltar (alt)
+          }
+          if (data.button === "y") {
+            return pressed ? press(90, "z") : release(90, "z"); // correr (alt)
+          }
         });
       })();
     </script>

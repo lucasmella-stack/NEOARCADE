@@ -20,6 +20,15 @@ interface ArcadeGame {
 
 const ARCADE_GAMES: ArcadeGame[] = [
   {
+    id: "slug",
+    name: "METAL SLUG",
+    description: "Run & Gun clásico. Corre, salta y dispara a todo.",
+    src: "/games/slug/index.html",
+    players: "1P",
+    color: "#ff9900",
+    icon: "🔫",
+  },
+  {
     id: "mario",
     name: "MARIO",
     description: "Plataformas clásico con salto, carrera y tuberías.",
