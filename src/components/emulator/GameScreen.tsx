@@ -20,6 +20,15 @@ interface ArcadeGame {
 
 const ARCADE_GAMES: ArcadeGame[] = [
   {
+    id: "pacman",
+    name: "PACMAN",
+    description: "Come puntos, esquiva fantasmas y limpia el laberinto.",
+    src: "/games/pacman.html",
+    players: "1P",
+    color: "#ffe45c",
+    icon: "🟡",
+  },
+  {
     id: "pong",
     name: "PONG",
     description: "El clásico. 2 jugadores con joysticks móviles.",
