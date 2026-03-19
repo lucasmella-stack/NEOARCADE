@@ -3,7 +3,7 @@ name: Bug Report
 about: Reportar un bug o problema
 title: "[BUG] "
 labels: bug
-assignees: ''
+assignees: ""
 ---
 
 ## Descripción del bug

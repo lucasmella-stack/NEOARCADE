@@ -7,7 +7,15 @@
     "type": "git",
     "url": "https://github.com/lucasmella-stack/NEOARCADE"
   },
-  "keywords": ["arcade", "retro", "gamepad", "websocket", "nextjs", "emulator", "multiplayer"],
+  "keywords": [
+    "arcade",
+    "retro",
+    "gamepad",
+    "websocket",
+    "nextjs",
+    "emulator",
+    "multiplayer"
+  ],
   "private": true,
   "scripts": {
     "dev": "tsx watch server.ts",

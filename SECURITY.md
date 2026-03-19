@@ -3,8 +3,8 @@
 ## Versiones soportadas
 
 | Versión | Soportada |
-|---|---|
-| 0.1.x | ✅ |
+| ------- | --------- |
+| 0.1.x   | ✅        |
 
 ## Reportar una vulnerabilidad
 

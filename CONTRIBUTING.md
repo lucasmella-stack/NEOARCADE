@@ -63,10 +63,10 @@ pnpm dev
 
 ## Branches
 
-| Prefijo | Uso |
-|---|---|
-| `feat/` | Nueva funcionalidad |
-| `fix/` | Corrección de bug |
+| Prefijo  | Uso                     |
+| -------- | ----------------------- |
+| `feat/`  | Nueva funcionalidad     |
+| `fix/`   | Corrección de bug       |
 | `chore/` | Tareas de mantenimiento |
 
 ---

@@ -24,6 +24,7 @@
 Una consola de arcade que corre enteramente en el navegador. Abrís la web en tu PC/TV, escaneás el QR con el celular, y el celular se convierte en un gamepad virtual con D-pad + botones A/B + Start/Select. Dos personas pueden jugar al mismo tiempo.
 
 **Características:**
+
 - 4 juegos JS integrados (Snake, Pong, Breakout, Space Invaders)
 - Soporte para ROMs vía EmulatorJS (NeoGeo, SNES, NES, Arcade) — el usuario carga sus propias ROMs
 - Controlador móvil con estética retro 3D (D-pad, A, B, Start, Select)
@@ -35,16 +36,16 @@ Una consola de arcade que corre enteramente en el navegador. Abrís la web en tu
 
 ## Stack
 
-| Tecnología | Uso |
-|---|---|
-| **Next.js 15** (App Router) | Frontend + SSR |
-| **React 19** | UI |
-| **Socket.io** | Comunicación realtime (WebSocket) |
-| **EmulatorJS** | Emulación de consolas retro |
-| **Zustand** | Estado global (room, players) |
-| **Tailwind CSS 4** | Estilos |
-| **TypeScript** (strict) | Tipado |
-| **pnpm** | Gestor de paquetes |
+| Tecnología                  | Uso                               |
+| --------------------------- | --------------------------------- |
+| **Next.js 15** (App Router) | Frontend + SSR                    |
+| **React 19**                | UI                                |
+| **Socket.io**               | Comunicación realtime (WebSocket) |
+| **EmulatorJS**              | Emulación de consolas retro       |
+| **Zustand**                 | Estado global (room, players)     |
+| **Tailwind CSS 4**          | Estilos                           |
+| **TypeScript** (strict)     | Tipado                            |
+| **pnpm**                    | Gestor de paquetes                |
 
 ---
 
@@ -93,23 +94,23 @@ ngrok http 3000
 
 ## Comandos disponibles
 
-| Comando | Descripción |
-|---|---|
-| `pnpm dev` | Desarrollo (custom server con tsx watch) |
-| `pnpm build` | Build de producción |
-| `pnpm start` | Producción (`node server.js`) |
-| `pnpm test` | Tests (Vitest) |
-| `pnpm lint` | ESLint |
-| `pnpm typecheck` | TypeScript check |
+| Comando          | Descripción                              |
+| ---------------- | ---------------------------------------- |
+| `pnpm dev`       | Desarrollo (custom server con tsx watch) |
+| `pnpm build`     | Build de producción                      |
+| `pnpm start`     | Producción (`node server.js`)            |
+| `pnpm test`      | Tests (Vitest)                           |
+| `pnpm lint`      | ESLint                                   |
+| `pnpm typecheck` | TypeScript check                         |
 
 ---
 
 ## Variables de entorno
 
-| Variable | Descripción | Ejemplo |
-|---|---|---|
+| Variable                 | Descripción                        | Ejemplo                 |
+| ------------------------ | ---------------------------------- | ----------------------- |
 | `NEXT_PUBLIC_SOCKET_URL` | URL pública del servidor Socket.io | `http://localhost:3000` |
-| `PORT` | Puerto del servidor | `3000` |
+| `PORT`                   | Puerto del servidor                | `3000`                  |
 
 Ver `.env.example` para referencia.
 
