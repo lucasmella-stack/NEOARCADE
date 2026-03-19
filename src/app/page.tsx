@@ -36,6 +36,9 @@ export default function GamePage() {
           NEOARCADE
         </span>
 
+        {/* Game controls portal target */}
+        <div id="topbar-controls" className="flex items-center gap-2" />
+
         {/* Spacer */}
         <div className="flex-1" />
 

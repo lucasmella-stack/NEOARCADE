@@ -4,6 +4,7 @@ import { getSocket } from "@/lib/socket";
 import { useGameStore } from "@/store/game.store";
 import type { InputEvent, RoomUpdateEvent } from "@/types/gamepad";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 // ─── Catálogo de juegos JS integrados ─────────────────────────────────────────
 
@@ -98,6 +99,13 @@ export function GameScreen() {
   const { setRoomId, setConnectedPlayers, setConnected } = useGameStore();
   const [mode, setMode] = useState<ScreenMode>({ type: "menu" });
   const [selectedCore, setSelectedCore] = useState<CoreKey>("NES");
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  // Find the TopBar portal target
+  useEffect(() => {
+    const el = document.getElementById("topbar-controls");
+    setPortalTarget(el);
+  }, []);
   const virtualGamepadsRef = useRef<VirtualGamepadState[]>([
     createEmptyGamepad(),
     createEmptyGamepad(),
@@ -295,98 +303,80 @@ export function GameScreen() {
         )}
       </div>
 
-      {/* ── Game controls bar — overlaid at bottom ── */}
-      <div
-        className="absolute bottom-0 left-0 right-0 flex flex-wrap items-center gap-2 px-3 z-20"
-        style={{
-          height: 42,
-          background: "linear-gradient(to top, rgba(1,2,36,0.95), rgba(1,2,36,0.7))",
-        }}
-      >
-        {/* Botón volver al menú (visible cuando hay un juego activo) */}
-        {mode.type !== "menu" && (
-          <button
-            onClick={handleBackToMenu}
-            className="h-9 px-4 rounded text-xs font-bold tracking-wider uppercase cursor-pointer transition-all"
+      {/* ── Game controls — portaled into TopBar ── */}
+      {portalTarget && createPortal(
+        <>
+          {mode.type !== "menu" && (
+            <button
+              onClick={handleBackToMenu}
+              className="h-7 px-3 rounded text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
+              style={{
+                background: "linear-gradient(180deg, #1a0a2e, #0a0520)",
+                color: "#ff3366",
+                border: "1.5px solid rgba(255,51,102,0.4)",
+                boxShadow: "0 2px 0 #050210",
+                fontFamily: '"Courier New", monospace',
+              }}
+            >
+              ← MENU
+            </button>
+          )}
+
+          {mode.type === "jsgame" && (
+            <span
+              className="text-[10px] font-bold tracking-widest uppercase shrink-0 hidden sm:block"
+              style={{ color: mode.game.color, fontFamily: '"Courier New", monospace' }}
+            >
+              ▶ {mode.game.name}
+            </span>
+          )}
+
+          <select
+            value={selectedCore}
+            onChange={(e) => setSelectedCore(e.target.value as CoreKey)}
+            disabled={mode.type !== "menu"}
+            title="Sistema de emulación"
+            className="h-7 px-2 rounded text-[10px] font-bold tracking-wider uppercase outline-none cursor-pointer disabled:opacity-40 shrink-0"
             style={{
-              backgroundColor:
-                "color-mix(in srgb, #ff3366 10%, var(--bg-card))",
-              color: "#ff3366",
-              border: "1px solid color-mix(in srgb, #ff3366 30%, transparent)",
+              background: "linear-gradient(180deg, #0a1a5c, #011246)",
+              color: "#58FAFD",
+              border: "1.5px solid #024DD6",
+              fontFamily: '"Courier New", monospace',
             }}
           >
-            ← MENU
-          </button>
-        )}
+            {Object.keys(CORES).map((key) => (
+              <option key={key} value={key}>
+                {key}
+              </option>
+            ))}
+          </select>
 
-        {/* Nombre del juego activo */}
-        {mode.type === "jsgame" && (
-          <span
-            className="text-xs font-bold tracking-widest uppercase"
-            style={{ color: mode.game.color }}
+          <label
+            className="h-7 px-3 rounded flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
+            style={{
+              background: mode.type === "emulator"
+                ? "linear-gradient(180deg, #024DD6, #011246)"
+                : "linear-gradient(180deg, #0a1a5c, #011246)",
+              color: "#58FAFD",
+              border: "1.5px solid #024DD6",
+              boxShadow: "0 2px 0 #010224",
+              fontFamily: '"Courier New", monospace',
+            }}
           >
-            ▶ {mode.game.name}
-          </span>
-        )}
-
-        {/* Separador visual */}
-        {mode.type === "menu" && (
-          <span
-            className="text-xs tracking-wider uppercase"
-            style={{ color: "var(--text-muted)" }}
-          >
-            O CARGA TU PROPIA ROM →
-          </span>
-        )}
-
-        {/* Selector de sistema (para ROM) */}
-        <select
-          value={selectedCore}
-          onChange={(e) => setSelectedCore(e.target.value as CoreKey)}
-          disabled={mode.type !== "menu"}
-          title="Sistema de emulación"
-          className="h-9 px-3 rounded text-xs font-bold tracking-wider uppercase outline-none cursor-pointer disabled:opacity-40"
-          style={{
-            backgroundColor: "var(--bg-card)",
-            color: "var(--neon-primary)",
-            border:
-              "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
-          }}
-        >
-          {Object.keys(CORES).map((key) => (
-            <option key={key} value={key}>
-              {key}
-            </option>
-          ))}
-        </select>
-
-        {/* Botón subir ROM */}
-        <label
-          className="h-9 px-4 rounded flex items-center gap-2 text-xs font-bold tracking-wider uppercase cursor-pointer transition-all"
-          style={{
-            backgroundColor:
-              mode.type === "emulator"
-                ? "color-mix(in srgb, var(--neon-primary) 10%, var(--bg-card))"
-                : "color-mix(in srgb, var(--neon-primary) 15%, var(--bg-card))",
-            color: "var(--neon-primary)",
-            border:
-              "1px solid color-mix(in srgb, var(--neon-primary) 40%, transparent)",
-            boxShadow:
-              "0 0 10px color-mix(in srgb, var(--neon-primary) 15%, transparent)",
-          }}
-        >
-          <span>
-            {mode.type === "emulator" ? "✓ ROM CARGADA" : "▲ CARGAR ROM"}
-          </span>
-          <input
-            type="file"
-            accept=".zip,.7z,.nes,.smc,.sfc,.gba,.bin,.rom,.md"
-            onChange={handleRomUpload}
-            className="hidden"
-            disabled={mode.type === "emulator"}
-          />
-        </label>
-      </div>
+            <span>
+              {mode.type === "emulator" ? "✓ ROM" : "▲ CARGAR ROM"}
+            </span>
+            <input
+              type="file"
+              accept=".zip,.7z,.nes,.smc,.sfc,.gba,.bin,.rom,.md"
+              onChange={handleRomUpload}
+              className="hidden"
+              disabled={mode.type === "emulator"}
+            />
+          </label>
+        </>,
+        portalTarget
+      )}
     </div>
   );
 }

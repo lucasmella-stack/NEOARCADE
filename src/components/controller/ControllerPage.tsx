@@ -3,22 +3,23 @@
 import { getSocket } from "@/lib/socket";
 import { useGameStore } from "@/store/game.store";
 import type { Button } from "@/types/gamepad";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── Colors — 3D retro solid palette ────────────────────────────────────────
 const C = {
   // Primary body
-  body: "#1a3a8a",       // Bold blue body (like the Polaroid)
-  bodyLight: "#2a55b8",  // Lighter face
-  bodyDark: "#0e2260",   // Shadow/underside
+  body: "#1a3a8a", // Bold blue body (like the Polaroid)
+  bodyLight: "#2a55b8", // Lighter face
+  bodyDark: "#0e2260", // Shadow/underside
   // D-pad & details
-  dpad: "#1a1a2e",       // Dark charcoal for D-pad
-  dpadFace: "#252540",   // Slightly lighter face
+  dpad: "#1a1a2e", // Dark charcoal for D-pad
+  dpadFace: "#252540", // Slightly lighter face
   // Buttons
-  btnPink: "#e83a7d",    // Bold pink like the camera
+  btnPink: "#e83a7d", // Bold pink like the camera
   btnPinkDark: "#b0285d",
-  btnYellow: "#f5c842",  // Yellow accent
+  btnYellow: "#f5c842", // Yellow accent
   btnYellowDark: "#c89e28",
   // Accent
   cyan: "#58FAFD",
@@ -119,11 +120,19 @@ export function ControllerPage() {
   const [orientationLocked, setOrientationLocked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Track fullscreen changes
+  // Track fullscreen changes (webkit fallback for iOS Safari)
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFsChange = () =>
+      setIsFullscreen(
+        !!(document.fullscreenElement ||
+          (document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement),
+      );
     document.addEventListener("fullscreenchange", onFsChange);
-    return () => document.removeEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -158,24 +167,8 @@ export function ControllerPage() {
     };
   }, []);
 
-  // On first touch, request fullscreen + landscape lock (needs user gesture)
-  useEffect(() => {
-    if (orientationLocked) return;
-    const tryLock = async () => {
-      try {
-        await document.documentElement.requestFullscreen();
-        const orientation = screen.orientation as ScreenOrientation & {
-          lock(o: string): Promise<void>;
-        };
-        await orientation.lock("landscape");
-        setOrientationLocked(true);
-      } catch {
-        /* ignore */
-      }
-    };
-    document.addEventListener("touchstart", tryLock, { once: true });
-    return () => document.removeEventListener("touchstart", tryLock);
-  }, [orientationLocked]);
+  // Note: auto-fullscreen on touchstart removed — it raced with the AMPLIAR button click
+  // causing immediate enter+exit. Fullscreen is controlled solely by handleFullscreen.
 
   useEffect(() => {
     const roomId = searchParams.get("room");
@@ -219,8 +212,14 @@ export function ControllerPage() {
 
   const handleFullscreen = useCallback(() => {
     const el = document.documentElement;
-    if (!document.fullscreenElement) {
-      el.requestFullscreen()
+    const isFullNow = !!(document.fullscreenElement ||
+      (document as Document & { webkitFullscreenElement?: Element }).webkitFullscreenElement);
+    if (!isFullNow) {
+      // iOS Safari uses webkitRequestFullscreen
+      const doFs = (el.requestFullscreen ??
+        (el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> })
+          .webkitRequestFullscreen)?.bind(el);
+      doFs?.()
         .then(() => {
           try {
             const o = screen.orientation as ScreenOrientation & {
@@ -233,7 +232,10 @@ export function ControllerPage() {
         })
         .catch(() => {});
     } else {
-      document.exitFullscreen().catch(() => {});
+      const doExit = (document.exitFullscreen ??
+        (document as Document & { webkitExitFullscreen?: () => void })
+          .webkitExitFullscreen)?.bind(document);
+      try { doExit?.(); } catch { /* ignore */ }
     }
   }, []);
 
@@ -276,7 +278,11 @@ export function ControllerPage() {
     <div className="pad-root">
       {/* ── Fullscreen button — hides when already fullscreen ── */}
       {!isFullscreen && (
-        <button className="pad-fs-btn" onClick={handleFullscreen}>
+        <button
+          className="pad-fs-btn"
+          onTouchStart={(e) => { e.preventDefault(); handleFullscreen(); }}
+          onClick={handleFullscreen}
+        >
           ⛶ AMPLIAR
         </button>
       )}
@@ -322,6 +328,7 @@ export function ControllerPage() {
 
         {/* ── Center: logo + system buttons ── */}
         <div className="pad-center">
+          <Image src="/logo.webp" alt="NEOARCADE" width={28} height={28} className="pad-center-logo" />
           <span className="pad-logo">NEOARCADE</span>
           <div className="pad-sys-row">
             <ControlButton
@@ -443,6 +450,7 @@ const padStyles = `
     border-radius: 10px;
     padding: 8px 18px;
     cursor: pointer;
+    touch-action: manipulation;
     box-shadow:
       0 4px 0 ${C.btnPinkDark},
       0 6px 12px rgba(0,0,0,0.4);
@@ -554,22 +562,22 @@ const padStyles = `
   .dpad-up {
     top: 0; left: 50%;
     transform: translateX(-50%);
-    width: 36%; height: 52%;
+    width: 36%; height: 46%;
   }
   .dpad-down {
     bottom: 0; left: 50%;
     transform: translateX(-50%);
-    width: 36%; height: 52%;
+    width: 36%; height: 46%;
   }
   .dpad-left {
     left: 0; top: 50%;
     transform: translateY(-50%);
-    width: 52%; height: 36%;
+    width: 46%; height: 36%;
   }
   .dpad-right {
     right: 0; top: 50%;
     transform: translateY(-50%);
-    width: 52%; height: 36%;
+    width: 46%; height: 36%;
   }
 
   .dpad-arm:active {
@@ -588,6 +596,13 @@ const padStyles = `
     min-width: 0;
   }
 
+  .pad-center-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  }
+
   .pad-logo {
     font-family: "Courier New", monospace;
     font-size: clamp(9px, 2.5vmin, 13px);
@@ -604,13 +619,14 @@ const padStyles = `
     align-items: center;
   }
 
-  /* System buttons — 3D pill shape */
+  /* System buttons — small rounded rectangle */
   .sys-btn {
-    height: 32px;
-    padding: 0 22px;
-    border-radius: 16px;
+    height: 30px;
+    min-width: 110px;
+    padding: 0 18px;
+    border-radius: 8px;
     font-family: "Courier New", monospace;
-    font-size: clamp(9px, 2.2vmin, 12px);
+    font-size: clamp(8px, 2vmin, 11px);
     font-weight: 800;
     letter-spacing: 0.12em;
     color: ${C.white};
@@ -621,6 +637,7 @@ const padStyles = `
     -webkit-tap-highlight-color: transparent;
     box-shadow:
       0 3px 0 #1a1a2e,
+      0 5px 8px rgba(0,0,0,0.3),
       inset 0 1px 0 rgba(255,255,255,0.1);
     touch-action: manipulation;
   }
@@ -667,8 +684,8 @@ const padStyles = `
 
   /* Action buttons — chunky 3D circles */
   .action-btn {
-    width: clamp(66px, 20vmin, 105px);
-    height: clamp(66px, 20vmin, 105px);
+    width: clamp(76px, 23vmin, 120px);
+    height: clamp(76px, 23vmin, 120px);
     border-radius: 50%;
     display: flex;
     align-items: center;
