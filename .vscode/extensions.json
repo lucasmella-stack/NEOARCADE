@@ -1,0 +1,33 @@
+{
+  "recommendations": [
+    // Core
+    "github.copilot",
+    "github.copilot-chat",
+
+    // TypeScript / React
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+
+    // Python
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+
+    // Testing
+    "ms-playwright.playwright",
+
+    // Docker
+    "ms-azuretools.vscode-docker",
+
+    // Git
+    "eamodio.gitlens",
+
+    // Markdown
+    "yzhang.markdown-all-in-one",
+
+    // Config files
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml"
+  ]
+}

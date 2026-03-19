@@ -1,0 +1,14 @@
+{
+  "name": "lucas-template",
+  "version": "1.0.0",
+  "description": "CLI to inject AI instructions and dev-template into any project",
+  "bin": {
+    "lucas-template": "./bin/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node ./bin/cli.js"
+  },
+  "author": "Lucas Mella",
+  "license": "MIT"
+}
