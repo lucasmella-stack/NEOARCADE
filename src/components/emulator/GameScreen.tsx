@@ -11,10 +11,10 @@ interface ArcadeGame {
   id: string;
   name: string;
   description: string;
-  src: string;       // ruta en /games/
-  players: string;   // "1P" | "1-2P"
-  color: string;     // color neon del card
-  icon: string;      // emoji
+  src: string; // ruta en /games/
+  players: string; // "1P" | "1-2P"
+  color: string; // color neon del card
+  icon: string; // emoji
 }
 
 const ARCADE_GAMES: ArcadeGame[] = [
@@ -114,7 +114,7 @@ export function GameScreen() {
         button: event.button,
         state: event.state,
       },
-      "*"
+      "*",
     );
   }, []);
 
@@ -197,15 +197,15 @@ export function GameScreen() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Pantalla principal */}
+    <div className="flex flex-col gap-2 h-full">
+      {/* Pantalla principal — fills all available height */}
       <div
-        className="relative rounded-lg overflow-hidden scanlines"
+        className="relative rounded-lg overflow-hidden scanlines flex-1 min-h-0"
         style={{
-          border: "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
           boxShadow:
             "0 0 30px color-mix(in srgb, var(--neon-primary) 15%, transparent), inset 0 0 60px rgba(0,0,0,0.5)",
-          aspectRatio: "4/3",
           backgroundColor: "#000",
         }}
       >
@@ -253,8 +253,12 @@ export function GameScreen() {
                     onClick={() => handlePlayGame(game)}
                     className="group relative rounded-lg p-3 text-left transition-all hover:scale-[1.03] active:scale-[0.98]"
                     style={{
-                      backgroundColor: "color-mix(in srgb, " + game.color + " 8%, #0a0a0f)",
-                      border: "1px solid color-mix(in srgb, " + game.color + " 30%, transparent)",
+                      backgroundColor:
+                        "color-mix(in srgb, " + game.color + " 8%, #0a0a0f)",
+                      border:
+                        "1px solid color-mix(in srgb, " +
+                        game.color +
+                        " 30%, transparent)",
                     }}
                   >
                     <span className="text-2xl block mb-1">{game.icon}</span>
@@ -274,7 +278,10 @@ export function GameScreen() {
                       className="absolute top-2 right-2 text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded"
                       style={{
                         color: game.color,
-                        backgroundColor: "color-mix(in srgb, " + game.color + " 15%, transparent)",
+                        backgroundColor:
+                          "color-mix(in srgb, " +
+                          game.color +
+                          " 15%, transparent)",
                       }}
                     >
                       {game.players}
@@ -287,15 +294,19 @@ export function GameScreen() {
         )}
       </div>
 
-      {/* Controles inferiores */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Controles compactos (overlay en la parte inferior) */}
+      <div
+        className="flex flex-wrap items-center gap-2 px-1 shrink-0"
+        style={{ minHeight: 36 }}
+      >
         {/* Botón volver al menú (visible cuando hay un juego activo) */}
         {mode.type !== "menu" && (
           <button
             onClick={handleBackToMenu}
             className="h-9 px-4 rounded text-xs font-bold tracking-wider uppercase cursor-pointer transition-all"
             style={{
-              backgroundColor: "color-mix(in srgb, #ff3366 10%, var(--bg-card))",
+              backgroundColor:
+                "color-mix(in srgb, #ff3366 10%, var(--bg-card))",
               color: "#ff3366",
               border: "1px solid color-mix(in srgb, #ff3366 30%, transparent)",
             }}
@@ -316,7 +327,10 @@ export function GameScreen() {
 
         {/* Separador visual */}
         {mode.type === "menu" && (
-          <span className="text-xs tracking-wider uppercase" style={{ color: "var(--text-muted)" }}>
+          <span
+            className="text-xs tracking-wider uppercase"
+            style={{ color: "var(--text-muted)" }}
+          >
             O CARGA TU PROPIA ROM →
           </span>
         )}
@@ -331,7 +345,8 @@ export function GameScreen() {
           style={{
             backgroundColor: "var(--bg-card)",
             color: "var(--neon-primary)",
-            border: "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--neon-primary) 30%, transparent)",
           }}
         >
           {Object.keys(CORES).map((key) => (
@@ -345,16 +360,20 @@ export function GameScreen() {
         <label
           className="h-9 px-4 rounded flex items-center gap-2 text-xs font-bold tracking-wider uppercase cursor-pointer transition-all"
           style={{
-            backgroundColor: mode.type === "emulator"
-              ? "color-mix(in srgb, var(--neon-primary) 10%, var(--bg-card))"
-              : "color-mix(in srgb, var(--neon-primary) 15%, var(--bg-card))",
+            backgroundColor:
+              mode.type === "emulator"
+                ? "color-mix(in srgb, var(--neon-primary) 10%, var(--bg-card))"
+                : "color-mix(in srgb, var(--neon-primary) 15%, var(--bg-card))",
             color: "var(--neon-primary)",
-            border: "1px solid color-mix(in srgb, var(--neon-primary) 40%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--neon-primary) 40%, transparent)",
             boxShadow:
               "0 0 10px color-mix(in srgb, var(--neon-primary) 15%, transparent)",
           }}
         >
-          <span>{mode.type === "emulator" ? "✓ ROM CARGADA" : "▲ CARGAR ROM"}</span>
+          <span>
+            {mode.type === "emulator" ? "✓ ROM CARGADA" : "▲ CARGAR ROM"}
+          </span>
           <input
             type="file"
             accept=".zip,.7z,.nes,.smc,.sfc,.gba,.bin,.rom,.md"
@@ -370,7 +389,12 @@ export function GameScreen() {
 
 // ─── EmulatorJS Loader ────────────────────────────────────────────────────────
 
-function loadEmulator(container: HTMLElement, romUrl: string, core: string, fileName: string) {
+function loadEmulator(
+  container: HTMLElement,
+  romUrl: string,
+  core: string,
+  fileName: string,
+) {
   // Eliminar script anterior de EmulatorJS si existe
   const oldScript = document.querySelector("script[data-emulatorjs]");
   if (oldScript) oldScript.remove();
@@ -397,13 +421,13 @@ function loadEmulator(container: HTMLElement, romUrl: string, core: string, file
   win.EJS_multitap = false;
   // Inputs de teclado para jugador 1 (fallback local, funciona sin móvil)
   win.EJS_Buttons = [
-    { value: "ArrowUp",    player: 1, button: "up" },
-    { value: "ArrowDown",  player: 1, button: "down" },
-    { value: "ArrowLeft",  player: 1, button: "left" },
+    { value: "ArrowUp", player: 1, button: "up" },
+    { value: "ArrowDown", player: 1, button: "down" },
+    { value: "ArrowLeft", player: 1, button: "left" },
     { value: "ArrowRight", player: 1, button: "right" },
-    { value: "KeyZ",       player: 1, button: "b", input: "button" },
-    { value: "KeyX",       player: 1, button: "a", input: "button" },
-    { value: "Enter",      player: 1, button: "start", input: "button" },
+    { value: "KeyZ", player: 1, button: "b", input: "button" },
+    { value: "KeyX", player: 1, button: "a", input: "button" },
+    { value: "Enter", player: 1, button: "start", input: "button" },
     { value: "ShiftRight", player: 1, button: "select", input: "button" },
   ];
 
@@ -494,7 +518,12 @@ function handleRemoteInput(event: InputEvent, gamepads: VirtualGamepadState[]) {
   }
 
   // También marcar D-pad como botones (EmulatorJS los checkea así en algunos cores)
-  const DPAD_BTN: Record<string, number> = { up: 12, down: 13, left: 14, right: 15 };
+  const DPAD_BTN: Record<string, number> = {
+    up: 12,
+    down: 13,
+    left: 14,
+    right: 15,
+  };
   if (event.button in DPAD_BTN) {
     const idx = DPAD_BTN[event.button];
     pad.buttons[idx] = { pressed: isPressed, value: isPressed ? 1 : 0 };
