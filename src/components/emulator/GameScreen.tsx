@@ -20,6 +20,15 @@ interface ArcadeGame {
 
 const ARCADE_GAMES: ArcadeGame[] = [
   {
+    id: "mario",
+    name: "MARIO",
+    description: "Plataformas clásico con salto, carrera y tuberías.",
+    src: "/games/mario.html",
+    players: "1P",
+    color: "#ff5c5c",
+    icon: "🍄",
+  },
+  {
     id: "pacman",
     name: "PACMAN",
     description: "Come puntos, esquiva fantasmas y limpia el laberinto.",
