@@ -8,8 +8,7 @@ import { useState } from "react";
 export default function GamePage() {
   const [showPanel, setShowPanel] = useState(false);
   const sponsorUrl =
-    process.env.NEXT_PUBLIC_SPONSOR_URL ??
-    "https://github.com/sponsors/lucasmella-stack";
+    process.env.NEXT_PUBLIC_SPONSOR_URL ?? "https://ko-fi.com/lucasmella";
 
   return (
     <main
