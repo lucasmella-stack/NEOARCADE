@@ -7,6 +7,9 @@ import { useState } from "react";
 
 export default function GamePage() {
   const [showPanel, setShowPanel] = useState(false);
+  const sponsorUrl =
+    process.env.NEXT_PUBLIC_SPONSOR_URL ??
+    "https://github.com/sponsors/lucasmella-stack";
 
   return (
     <main
@@ -20,11 +23,18 @@ export default function GamePage() {
           height: 52,
           background: "linear-gradient(180deg, #0a1a5c 0%, #011246 100%)",
           borderBottom: "3px solid #024DD6",
-          boxShadow: "0 4px 0 #010224, 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(88,250,253,0.1)",
+          boxShadow:
+            "0 4px 0 #010224, 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(88,250,253,0.1)",
         }}
       >
         {/* Logo */}
-        <Image src="/logo.webp" alt="NEOARCADE" width={32} height={32} className="shrink-0" />
+        <Image
+          src="/logo.webp"
+          alt="NEOARCADE"
+          width={32}
+          height={32}
+          className="shrink-0"
+        />
         <span
           className="text-sm font-bold tracking-[0.25em] uppercase select-none hidden sm:block"
           style={{
@@ -41,6 +51,24 @@ export default function GamePage() {
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        <a
+          href={sponsorUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2"
+          style={{
+            background: "linear-gradient(180deg, #2b1248, #140621)",
+            color: "#ffd166",
+            border: "2px solid #7a3cff",
+            boxShadow: "0 3px 0 #010224, inset 0 1px 0 rgba(255,209,102,0.12)",
+            fontFamily: '"Courier New", monospace',
+            textShadow: "0 0 8px rgba(255,209,102,0.35)",
+          }}
+        >
+          <span>♥</span>
+          <span className="hidden sm:inline">SPONSOR</span>
+        </a>
 
         {/* Botón abrir QR panel — gamepad icon */}
         <button
@@ -59,7 +87,16 @@ export default function GamePage() {
             textShadow: "0 0 6px #20E9FB80",
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M2 6m0 2a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2z" />
             <path d="M6 12h4m-2 -2v4" />
             <path d="M15 11l0 .01" />
@@ -107,7 +144,8 @@ export default function GamePage() {
             style={{
               background: "linear-gradient(180deg, #0a1a5c, #011246)",
               borderLeft: "3px solid #024DD6",
-              boxShadow: "-4px 0 30px rgba(0,0,0,0.6), inset 1px 0 0 rgba(88,250,253,0.08)",
+              boxShadow:
+                "-4px 0 30px rgba(0,0,0,0.6), inset 1px 0 0 rgba(88,250,253,0.08)",
             }}
           >
             <div className="flex items-center justify-between mb-4">

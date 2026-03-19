@@ -156,4 +156,8 @@ Las contribuciones son bienvenidas. Ver [CONTRIBUTING.md](CONTRIBUTING.md) para 
 
 ## Licencia
 
-Ver [LICENSE](LICENSE) para más detalles.
+NEOARCADE está publicado bajo **GNU Affero General Public License v3.0**.
+
+Esto significa que si distribuís una versión modificada, o la ofrecés como servicio accesible por red, tenés que poner a disposición el código fuente correspondiente bajo la misma licencia.
+
+Ver [LICENSE](LICENSE) para el texto completo.

@@ -1,359 +1,457 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEOARCADE — SPACE INVADERS</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
-canvas{display:block;image-rendering:pixelated}
-</style>
-</head>
-<body>
-<canvas id="g"></canvas>
-<script>
-(function(){
-  const C=document.getElementById("g");
-  const X=C.getContext("2d");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NEOARCADE — SPACE INVADERS</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0a0a0f;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="g"></canvas>
+    <script>
+      (function () {
+        const C = document.getElementById("g");
+        const X = C.getContext("2d");
 
-  function resize(){
-    const w=window.innerWidth,h=window.innerHeight;
-    const s=Math.min(w/800,h/600);
-    C.width=800;C.height=600;
-    C.style.width=Math.floor(800*s)+"px";
-    C.style.height=Math.floor(600*s)+"px";
-  }
-  resize();
-  window.addEventListener("resize",resize);
+        function resize() {
+          const w = window.innerWidth,
+            h = window.innerHeight;
+          const s = Math.min(w / 800, h / 600);
+          C.width = 800;
+          C.height = 600;
+          C.style.width = Math.floor(800 * s) + "px";
+          C.style.height = Math.floor(600 * s) + "px";
+        }
+        resize();
+        window.addEventListener("resize", resize);
 
-  const CYAN="#58FAFD",BLUE="#024DD6",BG="#0a0a0f",WHITE="#fff",RED="#ff4466",
-        GREEN="#44ff88",VIOLET="#c080ff",ORANGE="#ff9040";
+        const CYAN = "#58FAFD",
+          BLUE = "#024DD6",
+          BG = "#0a0a0f",
+          WHITE = "#fff",
+          RED = "#ff4466",
+          GREEN = "#44ff88",
+          VIOLET = "#c080ff",
+          ORANGE = "#ff9040";
 
-  // Player
-  const PW=40,PH=20,PY=560,PSPEED=5;
-  let px=380;
+        function emitSfx(sound) {
+          window.parent.postMessage({ type: "neoarcade-sfx", sound }, "*");
+        }
 
-  // Bullets
-  let bullets=[];
-  const BULLET_SPEED=8, BULLET_COOLDOWN=300;
-  let lastShot=0;
+        // Player
+        const PW = 40,
+          PH = 20,
+          PY = 560,
+          PSPEED = 5;
+        let px = 380;
 
-  // Invaders
-  const INV_ROWS=5, INV_COLS=11, IW=30, IH=22, INV_GAP_X=10, INV_GAP_Y=8;
-  const INV_COLORS=[RED,ORANGE,ORANGE,GREEN,GREEN];
-  let invaders=[], invDirX=1, invSpeed=0.5, invMoveTimer=0, invMoveInterval=800;
-  let invBullets=[];
+        // Bullets
+        let bullets = [];
+        const BULLET_SPEED = 8,
+          BULLET_COOLDOWN = 300;
+        let lastShot = 0;
 
-  // Game state
-  let state="menu", score=0, lives=3, level=1, highScore=0;
+        // Invaders
+        const INV_ROWS = 5,
+          INV_COLS = 11,
+          IW = 30,
+          IH = 22,
+          INV_GAP_X = 10,
+          INV_GAP_Y = 8;
+        const INV_COLORS = [RED, ORANGE, ORANGE, GREEN, GREEN];
+        let invaders = [],
+          invDirX = 1,
+          invSpeed = 0.5,
+          invMoveTimer = 0,
+          invMoveInterval = 800;
+        let invBullets = [];
 
-  // Explosions
-  let particles=[];
+        // Game state
+        let state = "menu",
+          score = 0,
+          lives = 3,
+          level = 1,
+          highScore = 0;
 
-  function initInvaders(){
-    invaders=[];
-    const startX=80, startY=60;
-    for(let r=0;r<INV_ROWS;r++){
-      for(let c=0;c<INV_COLS;c++){
-        invaders.push({
-          x:startX+c*(IW+INV_GAP_X),
-          y:startY+r*(IH+INV_GAP_Y),
-          w:IW,h:IH,
-          alive:true,
-          row:r,
-          color:INV_COLORS[r],
-          points:(INV_ROWS-r)*10
+        // Explosions
+        let particles = [];
+
+        function initInvaders() {
+          invaders = [];
+          const startX = 80,
+            startY = 60;
+          for (let r = 0; r < INV_ROWS; r++) {
+            for (let c = 0; c < INV_COLS; c++) {
+              invaders.push({
+                x: startX + c * (IW + INV_GAP_X),
+                y: startY + r * (IH + INV_GAP_Y),
+                w: IW,
+                h: IH,
+                alive: true,
+                row: r,
+                color: INV_COLORS[r],
+                points: (INV_ROWS - r) * 10,
+              });
+            }
+          }
+          invDirX = 1;
+          invMoveInterval = Math.max(200, 800 - level * 80);
+          invMoveTimer = 0;
+          invBullets = [];
+        }
+
+        function initGame() {
+          score = 0;
+          lives = 3;
+          level = 1;
+          px = 380;
+          bullets = [];
+          particles = [];
+          initInvaders();
+        }
+
+        function spawnParticles(x, y, color, count) {
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = Math.random() * 3 + 1;
+            particles.push({
+              x,
+              y,
+              vx: Math.cos(angle) * spd,
+              vy: Math.sin(angle) * spd,
+              life: 1,
+              color,
+            });
+          }
+        }
+
+        initGame();
+
+        // Input
+        const keys = {};
+        const padInput = { left: false, right: false, a: false };
+
+        document.addEventListener("keydown", (e) => {
+          keys[e.code] = true;
+          if (state === "menu") {
+            state = "playing";
+            initGame();
+            emitSfx("ui-start");
+          }
+          if (state === "gameover") {
+            state = "playing";
+            initGame();
+            emitSfx("ui-start");
+          }
         });
-      }
-    }
-    invDirX=1;
-    invMoveInterval=Math.max(200,800-level*80);
-    invMoveTimer=0;
-    invBullets=[];
-  }
+        document.addEventListener("keyup", (e) => {
+          keys[e.code] = false;
+        });
 
-  function initGame(){
-    score=0;lives=3;level=1;
-    px=380;
-    bullets=[];particles=[];
-    initInvaders();
-  }
+        window.addEventListener("message", (e) => {
+          const d = e.data;
+          if (d && d.type === "neoarcade-input") {
+            const pressed = d.state === "pressed";
+            if (d.button === "left") padInput.left = pressed;
+            if (d.button === "right") padInput.right = pressed;
+            if (d.button === "a" || d.button === "b") padInput.a = pressed;
+            if (state === "menu" && pressed) {
+              state = "playing";
+              initGame();
+              emitSfx("ui-start");
+            }
+            if (state === "gameover" && d.button === "start" && pressed) {
+              state = "playing";
+              initGame();
+              emitSfx("ui-start");
+            }
+          }
+        });
 
-  function spawnParticles(x,y,color,count){
-    for(let i=0;i<count;i++){
-      const angle=Math.random()*Math.PI*2;
-      const spd=Math.random()*3+1;
-      particles.push({
-        x,y,
-        vx:Math.cos(angle)*spd,
-        vy:Math.sin(angle)*spd,
-        life:1,
-        color
-      });
-    }
-  }
-
-  initGame();
-
-  // Input
-  const keys={};
-  const padInput={left:false,right:false,a:false};
-
-  document.addEventListener("keydown",e=>{
-    keys[e.code]=true;
-    if(state==="menu"){state="playing";initGame();}
-    if(state==="gameover"){state="playing";initGame();}
-  });
-  document.addEventListener("keyup",e=>{keys[e.code]=false;});
-
-  window.addEventListener("message",e=>{
-    const d=e.data;
-    if(d&&d.type==="neoarcade-input"){
-      const pressed=d.state==="pressed";
-      if(d.button==="left") padInput.left=pressed;
-      if(d.button==="right") padInput.right=pressed;
-      if(d.button==="a"||d.button==="b") padInput.a=pressed;
-      if(state==="menu"&&pressed){state="playing";initGame();}
-      if(state==="gameover"&&d.button==="start"&&pressed){state="playing";initGame();}
-    }
-  });
-
-  function shoot(){
-    const now=performance.now();
-    if(now-lastShot<BULLET_COOLDOWN) return;
-    lastShot=now;
-    bullets.push({x:px+PW/2,y:PY-4,active:true});
-  }
-
-  function update(){
-    if(state!=="playing") return;
-
-    // Player movement
-    if(keys["ArrowLeft"]||keys["KeyA"]||padInput.left) px-=PSPEED;
-    if(keys["ArrowRight"]||keys["KeyD"]||padInput.right) px+=PSPEED;
-    px=Math.max(0,Math.min(800-PW,px));
-
-    // Shoot
-    if(keys["Space"]||keys["KeyZ"]||keys["KeyX"]||padInput.a) shoot();
-
-    // Update bullets
-    bullets=bullets.filter(b=>{
-      b.y-=BULLET_SPEED;
-      if(b.y<0) return false;
-      // Hit invader
-      for(const inv of invaders){
-        if(!inv.alive) continue;
-        if(b.x>=inv.x&&b.x<=inv.x+inv.w&&b.y>=inv.y&&b.y<=inv.y+inv.h){
-          inv.alive=false;
-          score+=inv.points;
-          spawnParticles(inv.x+inv.w/2,inv.y+inv.h/2,inv.color,8);
-          return false;
+        function shoot() {
+          const now = performance.now();
+          if (now - lastShot < BULLET_COOLDOWN) return;
+          lastShot = now;
+          bullets.push({ x: px + PW / 2, y: PY - 4, active: true });
+          emitSfx("invaders-shoot");
         }
-      }
-      return true;
-    });
 
-    // Invader movement
-    invMoveTimer+=16.67;
-    if(invMoveTimer>=invMoveInterval){
-      invMoveTimer=0;
-      let hitEdge=false;
-      const aliveInvs=invaders.filter(i=>i.alive);
-      for(const inv of aliveInvs){
-        inv.x+=invDirX*12;
-        if(inv.x+inv.w>790||inv.x<10) hitEdge=true;
-      }
-      if(hitEdge){
-        invDirX*=-1;
-        for(const inv of aliveInvs){
-          inv.x+=invDirX*12;
-          inv.y+=15;
+        function update() {
+          if (state !== "playing") return;
+
+          // Player movement
+          if (keys["ArrowLeft"] || keys["KeyA"] || padInput.left) px -= PSPEED;
+          if (keys["ArrowRight"] || keys["KeyD"] || padInput.right)
+            px += PSPEED;
+          px = Math.max(0, Math.min(800 - PW, px));
+
+          // Shoot
+          if (keys["Space"] || keys["KeyZ"] || keys["KeyX"] || padInput.a)
+            shoot();
+
+          // Update bullets
+          bullets = bullets.filter((b) => {
+            b.y -= BULLET_SPEED;
+            if (b.y < 0) return false;
+            // Hit invader
+            for (const inv of invaders) {
+              if (!inv.alive) continue;
+              if (
+                b.x >= inv.x &&
+                b.x <= inv.x + inv.w &&
+                b.y >= inv.y &&
+                b.y <= inv.y + inv.h
+              ) {
+                inv.alive = false;
+                score += inv.points;
+                spawnParticles(
+                  inv.x + inv.w / 2,
+                  inv.y + inv.h / 2,
+                  inv.color,
+                  8,
+                );
+                emitSfx("invaders-hit");
+                return false;
+              }
+            }
+            return true;
+          });
+
+          // Invader movement
+          invMoveTimer += 16.67;
+          if (invMoveTimer >= invMoveInterval) {
+            invMoveTimer = 0;
+            let hitEdge = false;
+            const aliveInvs = invaders.filter((i) => i.alive);
+            for (const inv of aliveInvs) {
+              inv.x += invDirX * 12;
+              if (inv.x + inv.w > 790 || inv.x < 10) hitEdge = true;
+            }
+            if (hitEdge) {
+              invDirX *= -1;
+              for (const inv of aliveInvs) {
+                inv.x += invDirX * 12;
+                inv.y += 15;
+              }
+              // Speed up
+              invMoveInterval = Math.max(100, invMoveInterval - 20);
+            }
+            // Invader shooting
+            if (aliveInvs.length > 0) {
+              const shooter =
+                aliveInvs[Math.floor(Math.random() * aliveInvs.length)];
+              invBullets.push({
+                x: shooter.x + shooter.w / 2,
+                y: shooter.y + shooter.h,
+              });
+            }
+          }
+
+          // Invader bullets
+          invBullets = invBullets.filter((b) => {
+            b.y += 3 + level * 0.3;
+            if (b.y > 600) return false;
+            // Hit player
+            if (b.x >= px && b.x <= px + PW && b.y >= PY && b.y <= PY + PH) {
+              lives--;
+              spawnParticles(px + PW / 2, PY + PH / 2, CYAN, 12);
+              emitSfx("invaders-player-hit");
+              if (lives <= 0) {
+                state = "gameover";
+                if (score > highScore) highScore = score;
+                emitSfx("invaders-gameover");
+              }
+              return false;
+            }
+            return true;
+          });
+
+          // Check if invaders reached bottom
+          for (const inv of invaders) {
+            if (inv.alive && inv.y + inv.h >= PY) {
+              state = "gameover";
+              if (score > highScore) highScore = score;
+              emitSfx("invaders-gameover");
+              return;
+            }
+          }
+
+          // All invaders dead — next level
+          if (invaders.every((i) => !i.alive)) {
+            level++;
+            emitSfx("invaders-level");
+            initInvaders();
+          }
+
+          // Update particles
+          particles = particles.filter((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.03;
+            return p.life > 0;
+          });
         }
-        // Speed up
-        invMoveInterval=Math.max(100,invMoveInterval-20);
-      }
-      // Invader shooting
-      if(aliveInvs.length>0){
-        const shooter=aliveInvs[Math.floor(Math.random()*aliveInvs.length)];
-        invBullets.push({x:shooter.x+shooter.w/2,y:shooter.y+shooter.h});
-      }
-    }
 
-    // Invader bullets
-    invBullets=invBullets.filter(b=>{
-      b.y+=3+level*0.3;
-      if(b.y>600) return false;
-      // Hit player
-      if(b.x>=px&&b.x<=px+PW&&b.y>=PY&&b.y<=PY+PH){
-        lives--;
-        spawnParticles(px+PW/2,PY+PH/2,CYAN,12);
-        if(lives<=0){
-          state="gameover";
-          if(score>highScore) highScore=score;
+        function drawInvader(x, y, w, h, color) {
+          X.fillStyle = color;
+          // Simple pixel-art invader shape
+          const s = w / 8;
+          // Body
+          X.fillRect(x + s, y, w - 2 * s, h);
+          // Sides
+          X.fillRect(x, y + s, s, h - 2 * s);
+          X.fillRect(x + w - s, y + s, s, h - 2 * s);
+          // Eyes
+          X.fillStyle = BG;
+          X.fillRect(x + 2 * s, y + s, s, s);
+          X.fillRect(x + w - 3 * s, y + s, s, s);
+          // Legs
+          X.fillStyle = color;
+          X.fillRect(x + s, y + h, s, s * 0.5);
+          X.fillRect(x + w - 2 * s, y + h, s, s * 0.5);
         }
-        return false;
-      }
-      return true;
-    });
 
-    // Check if invaders reached bottom
-    for(const inv of invaders){
-      if(inv.alive&&inv.y+inv.h>=PY){
-        state="gameover";
-        if(score>highScore) highScore=score;
-        return;
-      }
-    }
+        function draw() {
+          X.fillStyle = BG;
+          X.fillRect(0, 0, 800, 600);
 
-    // All invaders dead — next level
-    if(invaders.every(i=>!i.alive)){
-      level++;
-      initInvaders();
-    }
+          // Stars
+          if (!draw._stars) {
+            draw._stars = [];
+            for (let i = 0; i < 60; i++)
+              draw._stars.push({
+                x: Math.random() * 800,
+                y: Math.random() * 500,
+                s: Math.random() * 1.5 + 0.5,
+              });
+          }
+          X.fillStyle = "#ffffff15";
+          for (const st of draw._stars) {
+            X.fillRect(st.x, st.y, st.s, st.s);
+          }
 
-    // Update particles
-    particles=particles.filter(p=>{
-      p.x+=p.vx;p.y+=p.vy;
-      p.life-=0.03;
-      return p.life>0;
-    });
-  }
+          if (state === "menu") {
+            X.fillStyle = GREEN;
+            X.font = "bold 40px monospace";
+            X.textAlign = "center";
+            X.fillText("SPACE INVADERS", 400, 200);
+            X.font = "16px monospace";
+            X.fillStyle = WHITE;
+            X.fillText("← →  MOVE  |  A / SPACE  FIRE", 400, 270);
+            X.fillStyle = GREEN + "90";
+            X.fillText("PRESS ANY KEY OR BUTTON TO START", 400, 330);
+            if (highScore > 0) {
+              X.font = "14px monospace";
+              X.fillStyle = CYAN;
+              X.fillText("HIGH SCORE: " + highScore, 400, 390);
+            }
+            // Draw a decorative invader
+            X.shadowColor = GREEN;
+            X.shadowBlur = 20;
+            drawInvader(375, 100, 50, 36, GREEN);
+            X.shadowBlur = 0;
+            return;
+          }
 
-  function drawInvader(x,y,w,h,color){
-    X.fillStyle=color;
-    // Simple pixel-art invader shape
-    const s=w/8;
-    // Body
-    X.fillRect(x+s,y,w-2*s,h);
-    // Sides
-    X.fillRect(x,y+s,s,h-2*s);
-    X.fillRect(x+w-s,y+s,s,h-2*s);
-    // Eyes
-    X.fillStyle=BG;
-    X.fillRect(x+2*s,y+s,s,s);
-    X.fillRect(x+w-3*s,y+s,s,s);
-    // Legs
-    X.fillStyle=color;
-    X.fillRect(x+s,y+h,s,s*0.5);
-    X.fillRect(x+w-2*s,y+h,s,s*0.5);
-  }
+          // Invaders
+          for (const inv of invaders) {
+            if (!inv.alive) continue;
+            X.shadowColor = inv.color;
+            X.shadowBlur = 6;
+            drawInvader(inv.x, inv.y, inv.w, inv.h, inv.color);
+          }
+          X.shadowBlur = 0;
 
-  function draw(){
-    X.fillStyle=BG;
-    X.fillRect(0,0,800,600);
+          // Player ship
+          X.shadowColor = CYAN;
+          X.shadowBlur = 12;
+          X.fillStyle = CYAN;
+          X.beginPath();
+          X.moveTo(px + PW / 2, PY);
+          X.lineTo(px, PY + PH);
+          X.lineTo(px + PW, PY + PH);
+          X.closePath();
+          X.fill();
+          X.shadowBlur = 0;
 
-    // Stars
-    if(!draw._stars){
-      draw._stars=[];
-      for(let i=0;i<60;i++) draw._stars.push({x:Math.random()*800,y:Math.random()*500,s:Math.random()*1.5+0.5});
-    }
-    X.fillStyle="#ffffff15";
-    for(const st of draw._stars){
-      X.fillRect(st.x,st.y,st.s,st.s);
-    }
+          // Player bullets
+          X.shadowColor = WHITE;
+          X.shadowBlur = 8;
+          X.fillStyle = WHITE;
+          for (const b of bullets) {
+            X.fillRect(b.x - 1.5, b.y - 6, 3, 10);
+          }
 
-    if(state==="menu"){
-      X.fillStyle=GREEN;
-      X.font="bold 40px monospace";
-      X.textAlign="center";
-      X.fillText("SPACE INVADERS",400,200);
-      X.font="16px monospace";
-      X.fillStyle=WHITE;
-      X.fillText("← →  MOVE  |  A / SPACE  FIRE",400,270);
-      X.fillStyle=GREEN+"90";
-      X.fillText("PRESS ANY KEY OR BUTTON TO START",400,330);
-      if(highScore>0){
-        X.font="14px monospace";X.fillStyle=CYAN;
-        X.fillText("HIGH SCORE: "+highScore,400,390);
-      }
-      // Draw a decorative invader
-      X.shadowColor=GREEN;X.shadowBlur=20;
-      drawInvader(375,100,50,36,GREEN);
-      X.shadowBlur=0;
-      return;
-    }
+          // Invader bullets
+          X.shadowColor = RED;
+          X.shadowBlur = 6;
+          X.fillStyle = RED;
+          for (const b of invBullets) {
+            X.fillRect(b.x - 1.5, b.y, 3, 10);
+          }
+          X.shadowBlur = 0;
 
-    // Invaders
-    for(const inv of invaders){
-      if(!inv.alive) continue;
-      X.shadowColor=inv.color;
-      X.shadowBlur=6;
-      drawInvader(inv.x,inv.y,inv.w,inv.h,inv.color);
-    }
-    X.shadowBlur=0;
+          // Particles
+          for (const p of particles) {
+            X.globalAlpha = p.life;
+            X.fillStyle = p.color;
+            X.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+          }
+          X.globalAlpha = 1;
 
-    // Player ship
-    X.shadowColor=CYAN;
-    X.shadowBlur=12;
-    X.fillStyle=CYAN;
-    X.beginPath();
-    X.moveTo(px+PW/2,PY);
-    X.lineTo(px,PY+PH);
-    X.lineTo(px+PW,PY+PH);
-    X.closePath();
-    X.fill();
-    X.shadowBlur=0;
+          // HUD
+          X.fillStyle = CYAN;
+          X.font = "bold 18px monospace";
+          X.textAlign = "left";
+          X.fillText("SCORE: " + score, 20, 28);
+          X.textAlign = "center";
+          X.fillText("LEVEL " + level, 400, 28);
+          X.textAlign = "right";
+          X.fillStyle = RED;
+          X.fillText("♥".repeat(lives), 780, 28);
 
-    // Player bullets
-    X.shadowColor=WHITE;
-    X.shadowBlur=8;
-    X.fillStyle=WHITE;
-    for(const b of bullets){
-      X.fillRect(b.x-1.5,b.y-6,3,10);
-    }
+          if (state === "gameover") {
+            X.fillStyle = "#000a";
+            X.fillRect(0, 0, 800, 600);
+            X.fillStyle = RED;
+            X.font = "bold 40px monospace";
+            X.textAlign = "center";
+            X.fillText("GAME OVER", 400, 260);
+            X.fillStyle = CYAN;
+            X.font = "bold 28px monospace";
+            X.fillText("SCORE: " + score, 400, 310);
+            X.font = "16px monospace";
+            X.fillStyle = WHITE;
+            X.fillText("PRESS ANY KEY OR START TO PLAY AGAIN", 400, 370);
+          }
+        }
 
-    // Invader bullets
-    X.shadowColor=RED;
-    X.shadowBlur=6;
-    X.fillStyle=RED;
-    for(const b of invBullets){
-      X.fillRect(b.x-1.5,b.y,3,10);
-    }
-    X.shadowBlur=0;
-
-    // Particles
-    for(const p of particles){
-      X.globalAlpha=p.life;
-      X.fillStyle=p.color;
-      X.fillRect(p.x-1.5,p.y-1.5,3,3);
-    }
-    X.globalAlpha=1;
-
-    // HUD
-    X.fillStyle=CYAN;
-    X.font="bold 18px monospace";
-    X.textAlign="left";
-    X.fillText("SCORE: "+score,20,28);
-    X.textAlign="center";
-    X.fillText("LEVEL "+level,400,28);
-    X.textAlign="right";
-    X.fillStyle=RED;
-    X.fillText("♥".repeat(lives),780,28);
-
-    if(state==="gameover"){
-      X.fillStyle="#000a";
-      X.fillRect(0,0,800,600);
-      X.fillStyle=RED;
-      X.font="bold 40px monospace";
-      X.textAlign="center";
-      X.fillText("GAME OVER",400,260);
-      X.fillStyle=CYAN;
-      X.font="bold 28px monospace";
-      X.fillText("SCORE: "+score,400,310);
-      X.font="16px monospace";
-      X.fillStyle=WHITE;
-      X.fillText("PRESS ANY KEY OR START TO PLAY AGAIN",400,370);
-    }
-  }
-
-  function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-</script>
-</body>
+        function loop() {
+          update();
+          draw();
+          requestAnimationFrame(loop);
+        }
+        loop();
+      })();
+    </script>
+  </body>
 </html>

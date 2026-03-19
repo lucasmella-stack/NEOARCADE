@@ -1,230 +1,327 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEOARCADE — PONG</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;overflow:hidden;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
-canvas{display:block;image-rendering:pixelated}
-</style>
-</head>
-<body>
-<canvas id="g"></canvas>
-<script>
-(function(){
-  const C=document.getElementById("g");
-  const X=C.getContext("2d");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NEOARCADE — PONG</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0a0a0f;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="g"></canvas>
+    <script>
+      (function () {
+        const C = document.getElementById("g");
+        const X = C.getContext("2d");
 
-  // Sizing — fill parent while keeping 4:3
-  function resize(){
-    const w=window.innerWidth, h=window.innerHeight;
-    const s=Math.min(w/800,h/600);
-    C.width=800; C.height=600;
-    C.style.width=Math.floor(800*s)+"px";
-    C.style.height=Math.floor(600*s)+"px";
-  }
-  resize();
-  window.addEventListener("resize",resize);
+        // Sizing — fill parent while keeping 4:3
+        function resize() {
+          const w = window.innerWidth,
+            h = window.innerHeight;
+          const s = Math.min(w / 800, h / 600);
+          C.width = 800;
+          C.height = 600;
+          C.style.width = Math.floor(800 * s) + "px";
+          C.style.height = Math.floor(600 * s) + "px";
+        }
+        resize();
+        window.addEventListener("resize", resize);
 
-  // Colors
-  const CYAN="#58FAFD", BLUE="#024DD6", BG="#0a0a0f", WHITE="#fff";
+        // Colors
+        const CYAN = "#58FAFD",
+          BLUE = "#024DD6",
+          BG = "#0a0a0f",
+          WHITE = "#fff";
 
-  // Game state
-  const WINNING_SCORE=7;
-  let state="menu"; // menu | playing | gameover
-  let winner=0;
+        function emitSfx(sound) {
+          window.parent.postMessage({ type: "neoarcade-sfx", sound }, "*");
+        }
 
-  // Paddles
-  const PW=12, PH=80, SPEED=6;
-  const p1={x:30,y:260,score:0,dy:0};
-  const p2={x:800-30-PW,y:260,score:0,dy:0};
+        // Game state
+        const WINNING_SCORE = 7;
+        let state = "menu"; // menu | playing | gameover
+        let winner = 0;
 
-  // Ball
-  const BR=8;
-  let bx,by,bvx,bvy;
+        // Paddles
+        const PW = 12,
+          PH = 80,
+          SPEED = 6;
+        const p1 = { x: 30, y: 260, score: 0, dy: 0 };
+        const p2 = { x: 800 - 30 - PW, y: 260, score: 0, dy: 0 };
 
-  function resetBall(dir){
-    bx=400; by=300;
-    const angle=(Math.random()*0.8-0.4);
-    const spd=5;
-    bvx=Math.cos(angle)*spd*(dir||1);
-    bvy=Math.sin(angle)*spd;
-  }
-  resetBall(1);
+        // Ball
+        const BR = 8;
+        let bx, by, bvx, bvy;
 
-  // AI for single-player (P2)
-  let aiMode=true;
+        function resetBall(dir) {
+          bx = 400;
+          by = 300;
+          const angle = Math.random() * 0.8 - 0.4;
+          const spd = 5;
+          bvx = Math.cos(angle) * spd * (dir || 1);
+          bvy = Math.sin(angle) * spd;
+        }
+        resetBall(1);
 
-  // Input
-  const keys={};
-  const padInput={1:{up:false,down:false},2:{up:false,down:false}};
+        // AI for single-player (P2)
+        let aiMode = true;
 
-  document.addEventListener("keydown",e=>{keys[e.code]=true;if(state==="menu"){state="playing";}if(state==="gameover"){resetGame();}});
-  document.addEventListener("keyup",e=>{keys[e.code]=false;});
+        // Input
+        const keys = {};
+        const padInput = {
+          1: { up: false, down: false },
+          2: { up: false, down: false },
+        };
 
-  // PostMessage bridge from NEOARCADE parent
-  window.addEventListener("message",e=>{
-    const d=e.data;
-    if(d&&d.type==="neoarcade-input"){
-      const p=d.player===2?2:1;
-      const pressed=d.state==="pressed";
-      if(d.button==="up") padInput[p].up=pressed;
-      if(d.button==="down") padInput[p].down=pressed;
-      // Any input from P2 disables AI
-      if(p===2) aiMode=false;
-      if(state==="menu") state="playing";
-      if(state==="gameover" && d.button==="start" && pressed) resetGame();
-    }
-  });
+        document.addEventListener("keydown", (e) => {
+          keys[e.code] = true;
+          if (state === "menu") {
+            state = "playing";
+            emitSfx("ui-start");
+          }
+          if (state === "gameover") {
+            resetGame();
+          }
+        });
+        document.addEventListener("keyup", (e) => {
+          keys[e.code] = false;
+        });
 
-  function resetGame(){
-    p1.score=0; p2.score=0;
-    p1.y=260; p2.y=260;
-    resetBall(1);
-    state="playing";
-  }
+        // PostMessage bridge from NEOARCADE parent
+        window.addEventListener("message", (e) => {
+          const d = e.data;
+          if (d && d.type === "neoarcade-input") {
+            const p = d.player === 2 ? 2 : 1;
+            const pressed = d.state === "pressed";
+            if (d.button === "up") padInput[p].up = pressed;
+            if (d.button === "down") padInput[p].down = pressed;
+            // Any input from P2 disables AI
+            if (p === 2) aiMode = false;
+            if (state === "menu") {
+              state = "playing";
+              emitSfx("ui-start");
+            }
+            if (state === "gameover" && d.button === "start" && pressed)
+              resetGame();
+          }
+        });
 
-  function update(){
-    if(state!=="playing") return;
+        function resetGame() {
+          p1.score = 0;
+          p2.score = 0;
+          p1.y = 260;
+          p2.y = 260;
+          resetBall(1);
+          state = "playing";
+          emitSfx("ui-start");
+        }
 
-    // P1 movement (W/S or arrows or pad)
-    p1.dy=0;
-    if(keys["KeyW"]||keys["ArrowUp"]||padInput[1].up) p1.dy=-SPEED;
-    if(keys["KeyS"]||keys["ArrowDown"]||padInput[1].down) p1.dy=SPEED;
-    p1.y+=p1.dy;
-    p1.y=Math.max(0,Math.min(600-PH,p1.y));
+        function update() {
+          if (state !== "playing") return;
 
-    // P2 movement (AI or pad)
-    p2.dy=0;
-    if(aiMode){
-      const center=p2.y+PH/2;
-      const diff=by-center;
-      if(Math.abs(diff)>10) p2.dy=Math.sign(diff)*SPEED*0.7;
-    } else {
-      if(keys["Numpad8"]||padInput[2].up) p2.dy=-SPEED;
-      if(keys["Numpad5"]||keys["Numpad2"]||padInput[2].down) p2.dy=SPEED;
-    }
-    p2.y+=p2.dy;
-    p2.y=Math.max(0,Math.min(600-PH,p2.y));
+          // P1 movement (W/S or arrows or pad)
+          p1.dy = 0;
+          if (keys["KeyW"] || keys["ArrowUp"] || padInput[1].up) p1.dy = -SPEED;
+          if (keys["KeyS"] || keys["ArrowDown"] || padInput[1].down)
+            p1.dy = SPEED;
+          p1.y += p1.dy;
+          p1.y = Math.max(0, Math.min(600 - PH, p1.y));
 
-    // Ball movement
-    bx+=bvx; by+=bvy;
+          // P2 movement (AI or pad)
+          p2.dy = 0;
+          if (aiMode) {
+            const center = p2.y + PH / 2;
+            const diff = by - center;
+            if (Math.abs(diff) > 10) p2.dy = Math.sign(diff) * SPEED * 0.7;
+          } else {
+            if (keys["Numpad8"] || padInput[2].up) p2.dy = -SPEED;
+            if (keys["Numpad5"] || keys["Numpad2"] || padInput[2].down)
+              p2.dy = SPEED;
+          }
+          p2.y += p2.dy;
+          p2.y = Math.max(0, Math.min(600 - PH, p2.y));
 
-    // Top/bottom bounce
-    if(by-BR<0){by=BR;bvy=-bvy;}
-    if(by+BR>600){by=600-BR;bvy=-bvy;}
+          // Ball movement
+          bx += bvx;
+          by += bvy;
 
-    // Paddle collision P1
-    if(bvx<0 && bx-BR<=p1.x+PW && bx-BR>=p1.x && by>=p1.y && by<=p1.y+PH){
-      bvx=-bvx*1.05;
-      const rel=(by-(p1.y+PH/2))/(PH/2);
-      bvy=rel*5;
-      bx=p1.x+PW+BR;
-    }
-    // Paddle collision P2
-    if(bvx>0 && bx+BR>=p2.x && bx+BR<=p2.x+PW && by>=p2.y && by<=p2.y+PH){
-      bvx=-bvx*1.05;
-      const rel=(by-(p2.y+PH/2))/(PH/2);
-      bvy=rel*5;
-      bx=p2.x-BR;
-    }
+          // Top/bottom bounce
+          if (by - BR < 0) {
+            by = BR;
+            bvy = -bvy;
+          }
+          if (by + BR > 600) {
+            by = 600 - BR;
+            bvy = -bvy;
+          }
 
-    // Speed cap
-    const maxSpd=12;
-    const spd=Math.sqrt(bvx*bvx+bvy*bvy);
-    if(spd>maxSpd){bvx=(bvx/spd)*maxSpd;bvy=(bvy/spd)*maxSpd;}
+          // Paddle collision P1
+          if (
+            bvx < 0 &&
+            bx - BR <= p1.x + PW &&
+            bx - BR >= p1.x &&
+            by >= p1.y &&
+            by <= p1.y + PH
+          ) {
+            bvx = -bvx * 1.05;
+            const rel = (by - (p1.y + PH / 2)) / (PH / 2);
+            bvy = rel * 5;
+            bx = p1.x + PW + BR;
+            emitSfx("pong-hit");
+          }
+          // Paddle collision P2
+          if (
+            bvx > 0 &&
+            bx + BR >= p2.x &&
+            bx + BR <= p2.x + PW &&
+            by >= p2.y &&
+            by <= p2.y + PH
+          ) {
+            bvx = -bvx * 1.05;
+            const rel = (by - (p2.y + PH / 2)) / (PH / 2);
+            bvy = rel * 5;
+            bx = p2.x - BR;
+            emitSfx("pong-hit");
+          }
 
-    // Scoring
-    if(bx<0){p2.score++;if(p2.score>=WINNING_SCORE){state="gameover";winner=2;}else resetBall(1);}
-    if(bx>800){p1.score++;if(p1.score>=WINNING_SCORE){state="gameover";winner=1;}else resetBall(-1);}
-  }
+          // Speed cap
+          const maxSpd = 12;
+          const spd = Math.sqrt(bvx * bvx + bvy * bvy);
+          if (spd > maxSpd) {
+            bvx = (bvx / spd) * maxSpd;
+            bvy = (bvy / spd) * maxSpd;
+          }
 
-  function draw(){
-    X.fillStyle=BG;
-    X.fillRect(0,0,800,600);
+          // Scoring
+          if (bx < 0) {
+            p2.score++;
+            emitSfx(p2.score >= WINNING_SCORE ? "pong-win" : "pong-score");
+            if (p2.score >= WINNING_SCORE) {
+              state = "gameover";
+              winner = 2;
+            } else resetBall(1);
+          }
+          if (bx > 800) {
+            p1.score++;
+            emitSfx(p1.score >= WINNING_SCORE ? "pong-win" : "pong-score");
+            if (p1.score >= WINNING_SCORE) {
+              state = "gameover";
+              winner = 1;
+            } else resetBall(-1);
+          }
+        }
 
-    // Center line
-    X.setLineDash([10,10]);
-    X.strokeStyle=BLUE+"60";
-    X.lineWidth=2;
-    X.beginPath();X.moveTo(400,0);X.lineTo(400,600);X.stroke();
-    X.setLineDash([]);
+        function draw() {
+          X.fillStyle = BG;
+          X.fillRect(0, 0, 800, 600);
 
-    if(state==="menu"){
-      X.fillStyle=CYAN;
-      X.font="bold 48px monospace";
-      X.textAlign="center";
-      X.fillText("PONG",400,200);
-      X.font="16px monospace";
-      X.fillStyle=WHITE;
-      X.fillText("PLAYER 1: ↑ ↓  /  PLAYER 2: CONNECT MOBILE",400,280);
-      X.fillStyle=CYAN+"90";
-      X.fillText("PRESS ANY KEY OR BUTTON TO START",400,340);
-      X.font="12px monospace";
-      X.fillStyle="#666";
-      X.fillText("First to "+WINNING_SCORE+" wins!",400,400);
-      drawGlow();
-      return;
-    }
+          // Center line
+          X.setLineDash([10, 10]);
+          X.strokeStyle = BLUE + "60";
+          X.lineWidth = 2;
+          X.beginPath();
+          X.moveTo(400, 0);
+          X.lineTo(400, 600);
+          X.stroke();
+          X.setLineDash([]);
 
-    // Paddles (with glow)
-    X.shadowColor=CYAN;
-    X.shadowBlur=16;
-    X.fillStyle=CYAN;
-    X.fillRect(p1.x,p1.y,PW,PH);
-    X.fillRect(p2.x,p2.y,PW,PH);
-    X.shadowBlur=0;
+          if (state === "menu") {
+            X.fillStyle = CYAN;
+            X.font = "bold 48px monospace";
+            X.textAlign = "center";
+            X.fillText("PONG", 400, 200);
+            X.font = "16px monospace";
+            X.fillStyle = WHITE;
+            X.fillText("PLAYER 1: ↑ ↓  /  PLAYER 2: CONNECT MOBILE", 400, 280);
+            X.fillStyle = CYAN + "90";
+            X.fillText("PRESS ANY KEY OR BUTTON TO START", 400, 340);
+            X.font = "12px monospace";
+            X.fillStyle = "#666";
+            X.fillText("First to " + WINNING_SCORE + " wins!", 400, 400);
+            drawGlow();
+            return;
+          }
 
-    // Ball (with glow)
-    X.shadowColor=CYAN;
-    X.shadowBlur=20;
-    X.fillStyle=WHITE;
-    X.beginPath();X.arc(bx,by,BR,0,Math.PI*2);X.fill();
-    X.shadowBlur=0;
+          // Paddles (with glow)
+          X.shadowColor = CYAN;
+          X.shadowBlur = 16;
+          X.fillStyle = CYAN;
+          X.fillRect(p1.x, p1.y, PW, PH);
+          X.fillRect(p2.x, p2.y, PW, PH);
+          X.shadowBlur = 0;
 
-    // Scores
-    X.fillStyle=CYAN;
-    X.font="bold 60px monospace";
-    X.textAlign="center";
-    X.fillText(p1.score,300,80);
-    X.fillText(p2.score,500,80);
+          // Ball (with glow)
+          X.shadowColor = CYAN;
+          X.shadowBlur = 20;
+          X.fillStyle = WHITE;
+          X.beginPath();
+          X.arc(bx, by, BR, 0, Math.PI * 2);
+          X.fill();
+          X.shadowBlur = 0;
 
-    // Player labels
-    X.font="12px monospace";
-    X.fillStyle=BLUE;
-    X.fillText("P1",300,100);
-    X.fillText(aiMode?"CPU":"P2",500,100);
+          // Scores
+          X.fillStyle = CYAN;
+          X.font = "bold 60px monospace";
+          X.textAlign = "center";
+          X.fillText(p1.score, 300, 80);
+          X.fillText(p2.score, 500, 80);
 
-    if(state==="gameover"){
-      X.fillStyle="#000a";
-      X.fillRect(0,0,800,600);
-      X.fillStyle=CYAN;
-      X.font="bold 36px monospace";
-      X.textAlign="center";
-      X.fillText((winner===1?"PLAYER 1":"PLAYER 2")+" WINS!",400,280);
-      X.font="16px monospace";
-      X.fillStyle=WHITE;
-      X.fillText("PRESS ANY KEY OR START TO PLAY AGAIN",400,340);
-    }
-  }
+          // Player labels
+          X.font = "12px monospace";
+          X.fillStyle = BLUE;
+          X.fillText("P1", 300, 100);
+          X.fillText(aiMode ? "CPU" : "P2", 500, 100);
 
-  function drawGlow(){
-    X.shadowColor=CYAN;
-    X.shadowBlur=40;
-    X.fillStyle=CYAN+"10";
-    X.fillRect(350,160,100,60);
-    X.shadowBlur=0;
-  }
+          if (state === "gameover") {
+            X.fillStyle = "#000a";
+            X.fillRect(0, 0, 800, 600);
+            X.fillStyle = CYAN;
+            X.font = "bold 36px monospace";
+            X.textAlign = "center";
+            X.fillText(
+              (winner === 1 ? "PLAYER 1" : "PLAYER 2") + " WINS!",
+              400,
+              280,
+            );
+            X.font = "16px monospace";
+            X.fillStyle = WHITE;
+            X.fillText("PRESS ANY KEY OR START TO PLAY AGAIN", 400, 340);
+          }
+        }
 
-  function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-</script>
-</body>
+        function drawGlow() {
+          X.shadowColor = CYAN;
+          X.shadowBlur = 40;
+          X.fillStyle = CYAN + "10";
+          X.fillRect(350, 160, 100, 60);
+          X.shadowBlur = 0;
+        }
+
+        function loop() {
+          update();
+          draw();
+          requestAnimationFrame(loop);
+        }
+        loop();
+      })();
+    </script>
+  </body>
 </html>

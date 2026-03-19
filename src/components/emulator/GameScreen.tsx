@@ -60,11 +60,14 @@ const ARCADE_GAMES: ArcadeGame[] = [
 // ─── EmulatorJS cores (para ROM upload) ───────────────────────────────────────
 
 const CORES = {
+  GB: "gambatte",
+  GBC: "gambatte",
   NES: "fceumm",
   SNES: "snes9x",
   NeoGeo: "fbneo",
   Arcade: "fbneo",
   GBA: "mgba",
+  N64: "mupen64plus_next",
   Genesis: "genesis_plus_gx",
 } as const;
 
@@ -93,18 +96,274 @@ type ScreenMode =
   | { type: "jsgame"; game: ArcadeGame }
   | { type: "emulator" };
 
+interface SoundStep {
+  frequency: number;
+  duration: number;
+  type: OscillatorType;
+  volume?: number;
+  slideTo?: number;
+  delay?: number;
+}
+
+const SOUND_LIBRARY: Record<string, SoundStep[]> = {
+  "ui-start": [
+    { frequency: 440, duration: 0.07, type: "square", volume: 0.03 },
+    {
+      frequency: 660,
+      duration: 0.09,
+      type: "square",
+      volume: 0.028,
+      delay: 0.05,
+    },
+  ],
+  "snake-eat": [
+    { frequency: 760, duration: 0.05, type: "square", volume: 0.028 },
+    {
+      frequency: 980,
+      duration: 0.08,
+      type: "square",
+      volume: 0.026,
+      delay: 0.04,
+    },
+  ],
+  "snake-dead": [
+    {
+      frequency: 260,
+      duration: 0.2,
+      type: "sawtooth",
+      volume: 0.03,
+      slideTo: 140,
+    },
+  ],
+  "pong-hit": [
+    { frequency: 620, duration: 0.05, type: "square", volume: 0.025 },
+  ],
+  "pong-score": [
+    { frequency: 300, duration: 0.08, type: "triangle", volume: 0.028 },
+    {
+      frequency: 520,
+      duration: 0.12,
+      type: "triangle",
+      volume: 0.024,
+      delay: 0.06,
+    },
+  ],
+  "pong-win": [
+    { frequency: 520, duration: 0.08, type: "square", volume: 0.028 },
+    {
+      frequency: 780,
+      duration: 0.1,
+      type: "square",
+      volume: 0.026,
+      delay: 0.06,
+    },
+    {
+      frequency: 1040,
+      duration: 0.14,
+      type: "square",
+      volume: 0.024,
+      delay: 0.14,
+    },
+  ],
+  "breakout-launch": [
+    {
+      frequency: 520,
+      duration: 0.06,
+      type: "square",
+      volume: 0.025,
+      slideTo: 700,
+    },
+  ],
+  "breakout-paddle": [
+    { frequency: 420, duration: 0.05, type: "triangle", volume: 0.023 },
+  ],
+  "breakout-brick": [
+    { frequency: 760, duration: 0.04, type: "square", volume: 0.022 },
+  ],
+  "breakout-life": [
+    {
+      frequency: 260,
+      duration: 0.15,
+      type: "sawtooth",
+      volume: 0.028,
+      slideTo: 180,
+    },
+  ],
+  "breakout-level": [
+    { frequency: 660, duration: 0.07, type: "triangle", volume: 0.024 },
+    {
+      frequency: 880,
+      duration: 0.08,
+      type: "triangle",
+      volume: 0.024,
+      delay: 0.05,
+    },
+    {
+      frequency: 1180,
+      duration: 0.1,
+      type: "triangle",
+      volume: 0.022,
+      delay: 0.11,
+    },
+  ],
+  "breakout-gameover": [
+    {
+      frequency: 220,
+      duration: 0.22,
+      type: "sawtooth",
+      volume: 0.03,
+      slideTo: 130,
+    },
+  ],
+  "invaders-shoot": [
+    {
+      frequency: 460,
+      duration: 0.05,
+      type: "square",
+      volume: 0.02,
+      slideTo: 560,
+    },
+  ],
+  "invaders-hit": [
+    { frequency: 920, duration: 0.05, type: "square", volume: 0.022 },
+  ],
+  "invaders-player-hit": [
+    {
+      frequency: 180,
+      duration: 0.18,
+      type: "sawtooth",
+      volume: 0.03,
+      slideTo: 110,
+    },
+  ],
+  "invaders-level": [
+    { frequency: 560, duration: 0.06, type: "square", volume: 0.024 },
+    {
+      frequency: 760,
+      duration: 0.08,
+      type: "square",
+      volume: 0.024,
+      delay: 0.05,
+    },
+    {
+      frequency: 980,
+      duration: 0.1,
+      type: "square",
+      volume: 0.022,
+      delay: 0.11,
+    },
+  ],
+  "invaders-gameover": [
+    {
+      frequency: 200,
+      duration: 0.2,
+      type: "sawtooth",
+      volume: 0.03,
+      slideTo: 120,
+    },
+  ],
+};
+
+type SoundName = keyof typeof SOUND_LIBRARY;
+
+interface AudioEngine {
+  unlock: () => void;
+  play: (sound: SoundName) => void;
+}
+
+function createAudioEngine(): AudioEngine {
+  let audioContext: AudioContext | null = null;
+
+  const getContext = () => {
+    if (audioContext) return audioContext;
+    const audioWindow = window as Window &
+      typeof globalThis & {
+        webkitAudioContext?: typeof AudioContext;
+      };
+    const AudioContextCtor =
+      audioWindow.AudioContext ?? audioWindow.webkitAudioContext;
+    if (!AudioContextCtor) return null;
+    audioContext = new AudioContextCtor();
+    return audioContext;
+  };
+
+  return {
+    unlock: () => {
+      const context = getContext();
+      if (context?.state === "suspended") {
+        void context.resume();
+      }
+    },
+    play: (sound) => {
+      const context = getContext();
+      if (!context) return;
+      if (context.state === "suspended") {
+        void context.resume();
+      }
+
+      const steps = SOUND_LIBRARY[sound];
+      const baseTime = context.currentTime;
+
+      steps.forEach((step) => {
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        const startTime = baseTime + (step.delay ?? 0);
+        const endFrequency = step.slideTo ?? step.frequency;
+        const volume = step.volume ?? 0.025;
+
+        oscillator.type = step.type;
+        oscillator.frequency.setValueAtTime(step.frequency, startTime);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          Math.max(60, endFrequency),
+          startTime + step.duration,
+        );
+
+        gainNode.gain.setValueAtTime(0.0001, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(volume, startTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.0001,
+          startTime + step.duration,
+        );
+
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + step.duration + 0.02);
+      });
+    },
+  };
+}
+
 export function GameScreen() {
   const emulatorRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const audioEngineRef = useRef<AudioEngine | null>(null);
   const { setRoomId, setConnectedPlayers, setConnected } = useGameStore();
   const [mode, setMode] = useState<ScreenMode>({ type: "menu" });
   const [selectedCore, setSelectedCore] = useState<CoreKey>("NES");
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
+  if (!audioEngineRef.current && typeof window !== "undefined") {
+    audioEngineRef.current = createAudioEngine();
+  }
+
   // Find the TopBar portal target
   useEffect(() => {
     const el = document.getElementById("topbar-controls");
     setPortalTarget(el);
+  }, []);
+
+  useEffect(() => {
+    const onWindowMessage = (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      const payload = event.data as { type?: string; sound?: string };
+      if (payload.type !== "neoarcade-sfx" || !payload.sound) return;
+      if (!(payload.sound in SOUND_LIBRARY)) return;
+      audioEngineRef.current?.play(payload.sound as SoundName);
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
   }, []);
   const virtualGamepadsRef = useRef<VirtualGamepadState[]>([
     createEmptyGamepad(),
@@ -173,12 +432,14 @@ export function GameScreen() {
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handlePlayGame = (game: ArcadeGame) => {
+    audioEngineRef.current?.unlock();
     // Limpiar EmulatorJS si estaba activo
     cleanupEmulator();
     setMode({ type: "jsgame", game });
   };
 
   const handleRomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    audioEngineRef.current?.unlock();
     const file = e.target.files?.[0];
     if (!file || !emulatorRef.current) return;
 
@@ -304,79 +565,82 @@ export function GameScreen() {
       </div>
 
       {/* ── Game controls — portaled into TopBar ── */}
-      {portalTarget && createPortal(
-        <>
-          {mode.type !== "menu" && (
-            <button
-              onClick={handleBackToMenu}
-              className="h-7 px-3 rounded text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
+      {portalTarget &&
+        createPortal(
+          <>
+            {mode.type !== "menu" && (
+              <button
+                onClick={handleBackToMenu}
+                className="h-7 px-3 rounded text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
+                style={{
+                  background: "linear-gradient(180deg, #1a0a2e, #0a0520)",
+                  color: "#ff3366",
+                  border: "1.5px solid rgba(255,51,102,0.4)",
+                  boxShadow: "0 2px 0 #050210",
+                  fontFamily: '"Courier New", monospace',
+                }}
+              >
+                ← MENU
+              </button>
+            )}
+
+            {mode.type === "jsgame" && (
+              <span
+                className="text-[10px] font-bold tracking-widest uppercase shrink-0 hidden sm:block"
+                style={{
+                  color: mode.game.color,
+                  fontFamily: '"Courier New", monospace',
+                }}
+              >
+                ▶ {mode.game.name}
+              </span>
+            )}
+
+            <select
+              value={selectedCore}
+              onChange={(e) => setSelectedCore(e.target.value as CoreKey)}
+              disabled={mode.type !== "menu"}
+              title="Sistema de emulación"
+              className="h-7 px-2 rounded text-[10px] font-bold tracking-wider uppercase outline-none cursor-pointer disabled:opacity-40 shrink-0"
               style={{
-                background: "linear-gradient(180deg, #1a0a2e, #0a0520)",
-                color: "#ff3366",
-                border: "1.5px solid rgba(255,51,102,0.4)",
-                boxShadow: "0 2px 0 #050210",
+                background: "linear-gradient(180deg, #0a1a5c, #011246)",
+                color: "#58FAFD",
+                border: "1.5px solid #024DD6",
                 fontFamily: '"Courier New", monospace',
               }}
             >
-              ← MENU
-            </button>
-          )}
+              {Object.keys(CORES).map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
 
-          {mode.type === "jsgame" && (
-            <span
-              className="text-[10px] font-bold tracking-widest uppercase shrink-0 hidden sm:block"
-              style={{ color: mode.game.color, fontFamily: '"Courier New", monospace' }}
+            <label
+              className="h-7 px-3 rounded flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
+              style={{
+                background:
+                  mode.type === "emulator"
+                    ? "linear-gradient(180deg, #024DD6, #011246)"
+                    : "linear-gradient(180deg, #0a1a5c, #011246)",
+                color: "#58FAFD",
+                border: "1.5px solid #024DD6",
+                boxShadow: "0 2px 0 #010224",
+                fontFamily: '"Courier New", monospace',
+              }}
             >
-              ▶ {mode.game.name}
-            </span>
-          )}
-
-          <select
-            value={selectedCore}
-            onChange={(e) => setSelectedCore(e.target.value as CoreKey)}
-            disabled={mode.type !== "menu"}
-            title="Sistema de emulación"
-            className="h-7 px-2 rounded text-[10px] font-bold tracking-wider uppercase outline-none cursor-pointer disabled:opacity-40 shrink-0"
-            style={{
-              background: "linear-gradient(180deg, #0a1a5c, #011246)",
-              color: "#58FAFD",
-              border: "1.5px solid #024DD6",
-              fontFamily: '"Courier New", monospace',
-            }}
-          >
-            {Object.keys(CORES).map((key) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
-            ))}
-          </select>
-
-          <label
-            className="h-7 px-3 rounded flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase cursor-pointer shrink-0"
-            style={{
-              background: mode.type === "emulator"
-                ? "linear-gradient(180deg, #024DD6, #011246)"
-                : "linear-gradient(180deg, #0a1a5c, #011246)",
-              color: "#58FAFD",
-              border: "1.5px solid #024DD6",
-              boxShadow: "0 2px 0 #010224",
-              fontFamily: '"Courier New", monospace',
-            }}
-          >
-            <span>
-              {mode.type === "emulator" ? "✓ ROM" : "▲ CARGAR ROM"}
-            </span>
-            <input
-              type="file"
-              accept=".zip,.7z,.nes,.smc,.sfc,.gba,.bin,.rom,.md"
-              onChange={handleRomUpload}
-              className="hidden"
-              disabled={mode.type === "emulator"}
-            />
-          </label>
-        </>,
-        portalTarget
-      )}
+              <span>{mode.type === "emulator" ? "✓ ROM" : "▲ CARGAR ROM"}</span>
+              <input
+                type="file"
+                accept=".zip,.7z,.nes,.smc,.sfc,.gba,.gb,.gbc,.bin,.rom,.md,.n64,.z64,.v64"
+                onChange={handleRomUpload}
+                className="hidden"
+                disabled={mode.type === "emulator"}
+              />
+            </label>
+          </>,
+          portalTarget,
+        )}
     </div>
   );
 }
