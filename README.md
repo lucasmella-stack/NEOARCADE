@@ -1,58 +1,158 @@
-# dev-template
+<p align="center">
+  <img src="public/logo.png" alt="NEOARCADE" width="120" />
+</p>
 
-Tu template base para proyectos profesionales con configuración AI integrada.
+<h1 align="center">NEOARCADE</h1>
 
-## Qué incluye
+<p align="center">
+  Consola retro open source que corre juegos 2D arcade en el navegador.<br/>
+  Los móviles se conectan como joysticks vía WebSocket escaneando un QR.<br/>
+  Sin instalar apps. 2 jugadores simultáneos.
+</p>
 
-```
-.github/
-├── copilot-instructions.md              ← Editar por proyecto
-└── instructions/
-    ├── global-profile.instructions.md   ← Tu perfil (universal)
-    ├── react-nextjs.instructions.md     ← React/Next.js patterns
-    ├── python.instructions.md           ← Python patterns
-    ├── testing.instructions.md          ← Testing rules
-    ├── git-workflow.instructions.md     ← Commits & PRs
-    ├── docker-devops.instructions.md    ← Docker & CI/CD
-    └── llm-ai.instructions.md          ← LLM/AI patterns
-.vscode/
-├── settings.json                        ← Editor config
-└── extensions.json                      ← Extensiones recomendadas
-AGENTS.md                                ← Para Claude/Codex/Gemini
-```
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Socket.io-4-white?logo=socket.io&logoColor=black" alt="Socket.io" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss" alt="Tailwind" />
+</p>
 
-## Uso
+---
 
-### Opción 1: CLI Automático (Recomendado)
+## Qué es NEOARCADE
 
-La forma más fácil de inyectar este template en un proyecto nuevo o existente es usando el CLI. Detectará automáticamente tu stack (Next.js, Python, etc.) y configurará las reglas de IA, extensiones y Git Hooks.
+Una consola de arcade que corre enteramente en el navegador. Abrís la web en tu PC/TV, escaneás el QR con el celular, y el celular se convierte en un gamepad virtual con D-pad + botones A/B + Start/Select. Dos personas pueden jugar al mismo tiempo.
+
+**Características:**
+- 4 juegos JS integrados (Snake, Pong, Breakout, Space Invaders)
+- Soporte para ROMs vía EmulatorJS (NeoGeo, SNES, NES, Arcade) — el usuario carga sus propias ROMs
+- Controlador móvil con estética retro 3D (D-pad, A, B, Start, Select)
+- Conexión en tiempo real vía Socket.io con latencia < 50ms en LAN
+- Fullscreen + landscape lock automático en móvil
+- Sin registro, sin instalación — sesiones anónimas por room ID
+
+---
+
+## Stack
+
+| Tecnología | Uso |
+|---|---|
+| **Next.js 15** (App Router) | Frontend + SSR |
+| **React 19** | UI |
+| **Socket.io** | Comunicación realtime (WebSocket) |
+| **EmulatorJS** | Emulación de consolas retro |
+| **Zustand** | Estado global (room, players) |
+| **Tailwind CSS 4** | Estilos |
+| **TypeScript** (strict) | Tipado |
+| **pnpm** | Gestor de paquetes |
+
+---
+
+## Requisitos previos
+
+- **Node.js** >= 18
+- **pnpm** >= 8 (`npm install -g pnpm`)
+
+---
+
+## Instalación
 
 ```bash
-npx github:lucasmella-stack/dev-template
+# Clonar el repositorio
+git clone https://github.com/lucasmella-stack/NEOARCADE.git
+cd NEOARCADE
+
+# Instalar dependencias
+pnpm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local si es necesario (por defecto apunta a localhost:3000)
 ```
 
-### Opción 2: GitHub Template
+---
 
-1. Push este repo a GitHub con la opción "Template repository" activada
-2. Cada proyecto nuevo: **Use this template** → Create new repository
+## Desarrollo
 
-### Opción 3: Manual (sin GitHub)
-
-```powershell
-# Clonar el template
-Copy-Item -Recurse "C:\Users\lucas\Documents\Be Web\dev-template" "C:\mi-proyecto"
-cd C:\mi-proyecto
-Remove-Item -Recurse .git
-git init
+```bash
+pnpm dev          # Servidor de desarrollo (custom server con tsx watch)
 ```
 
-## Después de crear el proyecto
+Esto levanta el servidor en `http://localhost:3000`.
 
-1. Si usaste el CLI, el archivo `.github/copilot-instructions.md` ya estará consolidado y listo.
-2. Abrir en VS Code → Copilot ya te conoce.
+Para probar el controlador móvil desde otro dispositivo, necesitás un tunnel:
 
-## Personalización
+```bash
+# Opción 1: ngrok (requiere cuenta gratuita en ngrok.com)
+ngrok http 3000
 
-- **Tu perfil**: Edita `global-profile.instructions.md` — se aplica a todo
-- **Agregar stack**: Crea `nombre.instructions.md` en `.github/instructions/`
-- **Proyecto específico**: Todo va en `copilot-instructions.md`
+# Después actualizá NEXT_PUBLIC_SOCKET_URL en .env.local con la URL del tunnel
+```
+
+---
+
+## Comandos disponibles
+
+| Comando | Descripción |
+|---|---|
+| `pnpm dev` | Desarrollo (custom server con tsx watch) |
+| `pnpm build` | Build de producción |
+| `pnpm start` | Producción (`node server.js`) |
+| `pnpm test` | Tests (Vitest) |
+| `pnpm lint` | ESLint |
+| `pnpm typecheck` | TypeScript check |
+
+---
+
+## Variables de entorno
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `NEXT_PUBLIC_SOCKET_URL` | URL pública del servidor Socket.io | `http://localhost:3000` |
+| `PORT` | Puerto del servidor | `3000` |
+
+Ver `.env.example` para referencia.
+
+---
+
+## Arquitectura
+
+```
+src/
+├── app/
+│   ├── page.tsx              # Pantalla principal: emulador + QR lobby
+│   ├── controller/
+│   │   └── page.tsx          # Vista móvil: gamepad virtual
+│   └── api/
+├── components/
+│   ├── emulator/             # Wrapper EmulatorJS + game screen
+│   ├── controller/           # Gamepad virtual (D-pad, A, B, Start, Select)
+│   └── lobby/                # QR code + estado de jugadores
+├── lib/
+│   └── socket.ts             # Cliente Socket.io singleton
+├── hooks/
+│   └── useGamepad.ts         # Hook para input del controlador
+├── store/
+│   └── game.store.ts         # Zustand: room, players, estado
+└── types/
+    └── gamepad.ts            # Tipos de inputs y eventos
+server.ts                     # Custom Next.js server con Socket.io
+```
+
+---
+
+## ROMs
+
+NEOARCADE **no incluye ni distribuye ROMs**. Solo se distribuye el engine de emulación (EmulatorJS). El usuario debe cargar sus propias ROMs localmente a través de la interfaz.
+
+---
+
+## Contribuir
+
+Las contribuciones son bienvenidas. Ver [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles.
+
+---
+
+## Licencia
+
+Ver [LICENSE](LICENSE) para más detalles.

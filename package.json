@@ -1,6 +1,13 @@
 {
   "name": "neoarcade",
   "version": "0.1.0",
+  "description": "Consola retro open source que corre juegos 2D arcade en el navegador. Los móviles se conectan como joysticks vía WebSocket escaneando un QR.",
+  "author": "lucasmella-stack",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucasmella-stack/NEOARCADE"
+  },
+  "keywords": ["arcade", "retro", "gamepad", "websocket", "nextjs", "emulator", "multiplayer"],
   "private": true,
   "scripts": {
     "dev": "tsx watch server.ts",
