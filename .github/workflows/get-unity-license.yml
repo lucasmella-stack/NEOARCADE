@@ -1,34 +1,61 @@
-name: 🔑 Get Unity License (run once)
+name: 🔑 Get Unity Activation File (run once)
 
-# Run this ONCE to get your Unity license file.
-# Steps:
-#   1. Go to Actions → "Get Unity License (run once)" → Run workflow
-#   2. Download the artifact "unity-activation-file" (.alf file)
-#   3. Go to https://license.unity3d.com/manual  (needs free Unity account)
-#   4. Upload the .alf file → download the .ulf file
-#   5. In your repo → Settings → Secrets → Actions, add:
-#        UNITY_LICENSE  = (full content of the .ulf file)
+# Runs Unity in Docker to generate the .alf manual activation file.
+# Steps after running:
+#   1. Actions → this workflow → Run workflow → wait ~5 min
+#   2. Download artifact "unity-activation-file" → extract the .alf inside
+#   3. Go to https://license.unity3d.com/manual (free Unity account required)
+#   4. Upload the .alf → select "Unity Personal" → Next → Download .ulf
+#   5. Repo → Settings → Secrets → Actions → New repository secret:
+#        UNITY_LICENSE  = full content of the .ulf file (open with Notepad, copy all)
 #        UNITY_EMAIL    = your Unity account email
 #        UNITY_PASSWORD = your Unity account password
+#   6. Then run the "Build Metal Slug" workflow
 
 on:
   workflow_dispatch:
 
 jobs:
-  get-license:
-    name: Request activation file
+  get-activation-file:
+    name: Generate .alf activation file
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Pull Unity Docker image
+        run: |
+          UNITY_VERSION="2018.3.8f1"
+          for ci_ver in 3 2 1 0; do
+            IMG="unityci/editor:ubuntu-${UNITY_VERSION}-base-${ci_ver}"
+            echo "Trying $IMG ..."
+            if docker pull "$IMG" 2>/dev/null; then
+              echo "UNITY_IMAGE=$IMG" >> "$GITHUB_ENV"
+              break
+            fi
+          done
+          if [ -z "$UNITY_IMAGE" ]; then
+            echo "ERROR: No Unity image found for $UNITY_VERSION"
+            exit 1
+          fi
+          echo "Using image: $UNITY_IMAGE"
 
-      - name: Request manual activation file
-        id: getManualLicenseFile
-        uses: game-ci/unity-request-activation-file@v2
-        with:
-          unityVersion: 2018.3.8f1
+      - name: Create manual activation file
+        run: |
+          mkdir -p "$HOME/alf"
+          docker run --rm \
+            -v "$HOME/alf:/alf" \
+            "$UNITY_IMAGE" \
+            bash -c "
+              unity-editor -batchmode -createManualActivationFile \
+                -logFile /dev/stdout -quit 2>&1 || true
+              find / -name 'Unity*.alf' 2>/dev/null \
+                | xargs -I{} cp {} /alf/ 2>/dev/null || true
+            "
+          echo "=== Generated files ==="
+          ls -la "$HOME/alf/"
+          cp "$HOME/alf/"*.alf . || { echo "ERROR: no .alf generated"; exit 1; }
 
       - name: Upload activation file
         uses: actions/upload-artifact@v4
         with:
           name: unity-activation-file
-          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
+          path: "*.alf"
+          retention-days: 7
