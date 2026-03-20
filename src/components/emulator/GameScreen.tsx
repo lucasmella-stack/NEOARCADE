@@ -21,8 +21,8 @@ interface ArcadeGame {
 const ARCADE_GAMES: ArcadeGame[] = [
   {
     id: "slug",
-    name: "METAL SLUG",
-    description: "Run & Gun clásico. Corre, salta y dispara a todo.",
+    name: "METAL SLUG (Unity Clone)",
+    description: "Tres niveles del clásico clonado en Unity. Dispara y avanza.",
     src: "/games/slug/index.html",
     players: "1P",
     color: "#ff9900",
@@ -30,10 +30,11 @@ const ARCADE_GAMES: ArcadeGame[] = [
   },
   {
     id: "sf",
-    name: "STREET FIGHTER",
-    description: "Pelea cuerpo a cuerpo. Puñetazos, patadas y hadouken.",
+    name: "STREET FIGHTER (Python/Pygbag)",
+    description:
+      "Warrior vs Wizard. Puñetazos, espada y magia en este clon de Pygame.",
     src: "/games/sf/index.html",
-    players: "1P",
+    players: "2P (VS CPU)",
     color: "#ff4422",
     icon: "🥊",
   },

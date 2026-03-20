@@ -1,0 +1,33 @@
+services:
+  neoarcade:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: neoarcade:latest
+    container_name: neoarcade
+    # Explicitly expose port if not using Traefik, but using labels for Traefik too
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_SPONSOR_URL=${NEXT_PUBLIC_SPONSOR_URL:-https://ko-fi.com/lucasmella}
+    networks:
+      - traefik_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neoarcade.rule=Host(`neoarcade.localhost`)"
+      - "traefik.http.routers.neoarcade.entrypoints=web"
+      - "traefik.http.services.neoarcade.loadbalancer.server.port=3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  traefik_net:
+    external: true
