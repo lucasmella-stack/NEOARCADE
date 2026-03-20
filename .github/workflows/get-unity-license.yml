@@ -23,11 +23,13 @@ jobs:
       - name: Pull Unity Docker image
         run: |
           UNITY_VERSION="2018.3.8f1"
+          UNITY_IMAGE=""
           for ci_ver in 3 2 1 0; do
             IMG="unityci/editor:ubuntu-${UNITY_VERSION}-base-${ci_ver}"
             echo "Trying $IMG ..."
-            if docker pull "$IMG" 2>/dev/null; then
-              echo "UNITY_IMAGE=$IMG" >> "$GITHUB_ENV"
+            if docker pull "$IMG"; then
+              UNITY_IMAGE="$IMG"
+              echo "UNITY_IMAGE=$UNITY_IMAGE" >> "$GITHUB_ENV"
               break
             fi
           done
