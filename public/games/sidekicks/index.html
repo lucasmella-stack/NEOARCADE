@@ -166,28 +166,6 @@
       <div class="spin"></div>
       <p id="loading-status">PREPARANDO SUPER SIDEKICKS...</p>
     </div>
-    <div id="bios-panel" class="panel hidden">
-      <div class="card">
-        <h2>BIOS NEO GEO NECESARIO</h2>
-        <p>
-          Super Sidekicks necesita el archivo <code>neogeo.zip</code>. Cárgalo
-          una sola vez y quedará guardado solo en este navegador para los dos
-          juegos Neo Geo.
-        </p>
-        <ul class="list">
-          <li>Archivo requerido: <code>neogeo.zip</code></li>
-          <li>No se sube al servidor</li>
-          <li>También servirá para Metal Slug en el mismo navegador</li>
-        </ul>
-        <div class="actions">
-          <button id="bios-button" class="primary-btn">
-            USAR BIOS NEO GEO
-          </button>
-          <button class="secondary-btn" onclick="history.back()">VOLVER</button>
-        </div>
-        <input id="bios-input" type="file" accept=".zip" hidden />
-      </div>
-    </div>
     <div id="error-panel" class="panel hidden">
       <div class="card">
         <h2>NO SE PUDO INICIAR</h2>
@@ -206,17 +184,8 @@
         gameTitle: "Super Sidekicks",
         romUrl: "ssideki.zip",
         playerSelector: "#game-container",
-        loadingText: "PREPARANDO SUPER SIDEKICKS...",
         loadingOverlayId: "loading-overlay",
         loadingStatusId: "loading-status",
-        biosPanelId: "bios-panel",
-        biosInputId: "bios-input",
-        biosButtonId: "bios-button",
-        errorPanelId: "error-panel",
-        errorTextId: "error-text",
-        retryButtonId: "retry-button",
-        buttonLabel: "USAR BIOS NEO GEO",
-        serverBiosUrl: "/games/bios/neogeo.zip",
       });
     </script>
   </body>

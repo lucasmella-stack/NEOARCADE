@@ -20,6 +20,26 @@ interface ArcadeGame {
 
 const ARCADE_GAMES: ArcadeGame[] = [
   {
+    id: "slug",
+    name: "METAL SLUG (NeoGeo)",
+    description:
+      "1-2P co-op. Si no hay BIOS instalado, te pide neogeo.zip una sola vez.",
+    src: "/games/slug/index.html",
+    players: "1-2P",
+    color: "#ff9900",
+    icon: "🔫",
+  },
+  {
+    id: "sidekicks",
+    name: "SUPER SIDEKICKS (NeoGeo)",
+    description:
+      "Futbol arcade 2P. Usa el mismo BIOS NeoGeo y abre desde el menu.",
+    src: "/games/sidekicks/index.html",
+    players: "1-2P",
+    color: "#44ff88",
+    icon: "⚽",
+  },
+  {
     id: "mario",
     name: "MARIO",
     description: "Plataformas clásico con salto, carrera y tuberías.",
@@ -75,29 +95,6 @@ const ARCADE_GAMES: ArcadeGame[] = [
   },
 ];
 
-const PRIVATE_TEST_GAMES: ArcadeGame[] = [
-  {
-    id: "slug",
-    name: "METAL SLUG (TEST)",
-    description:
-      "Prueba local 1-2P. Si falta BIOS, te pide neogeo.zip una sola vez.",
-    src: "/games/slug/index.html",
-    players: "1-2P",
-    color: "#ff9900",
-    icon: "🔫",
-  },
-  {
-    id: "sidekicks",
-    name: "SUPER SIDEKICKS (TEST)",
-    description:
-      "Prueba local 2P. Reutiliza el mismo BIOS NeoGeo del navegador.",
-    src: "/games/sidekicks/index.html",
-    players: "1-2P",
-    color: "#44ff88",
-    icon: "⚽",
-  },
-];
-
 // ─── EmulatorJS cores (para ROM upload) ───────────────────────────────────────
 
 const CORES = {
@@ -105,8 +102,8 @@ const CORES = {
   GBC: "gambatte",
   NES: "fceumm",
   SNES: "snes9x",
-  NeoGeo: "fbneo",
-  Arcade: "fbneo",
+  NeoGeo: "arcade",
+  Arcade: "arcade",
   GBA: "mgba",
   N64: "mupen64plus_next",
   Genesis: "genesis_plus_gx",
@@ -379,9 +376,7 @@ function createAudioEngine(): AudioEngine {
 
 export function GameScreen() {
   const emulatorRef = useRef<HTMLDivElement>(null);
-  {
-    /* Grid de juegos */
-  }
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const audioEngineRef = useRef<AudioEngine | null>(null);
   const { setRoomId, setConnectedPlayers, setConnected } = useGameStore();
   const [mode, setMode] = useState<ScreenMode>({ type: "menu" });
@@ -557,8 +552,8 @@ export function GameScreen() {
                 className="text-xs tracking-wider text-center mb-5"
                 style={{ color: "var(--text-muted)" }}
               >
-                Juegos integrados listos para jugar · Tambien puedes cargar tu
-                ROM
+                Juegos integrados para seleccionar y jugar · Tambien puedes
+                cargar tu ROM
               </p>
 
               {/* Grid de juegos */}
@@ -610,71 +605,9 @@ export function GameScreen() {
                 className="text-[10px] tracking-wide text-center mt-4 leading-relaxed"
                 style={{ color: "#6f7f8f" }}
               >
-                Neo Geo y otros sistemas con BIOS propietario van por CARGAR ROM
-                con tus propios archivos.
+                Algunos sistemas como Neo Geo pueden requerir BIOS del usuario
+                para el primer arranque.
               </p>
-
-              <div
-                className="mt-6 pt-4"
-                style={{ borderTop: "1px solid rgba(88,250,253,0.12)" }}
-              >
-                <p
-                  className="text-xs tracking-[0.2em] uppercase text-center mb-3"
-                  style={{ color: "#8fb8c6" }}
-                >
-                  Pruebas Locales Neo Geo
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {PRIVATE_TEST_GAMES.map((game) => (
-                    <button
-                      key={game.id}
-                      onClick={() => handlePlayGame(game)}
-                      className="group relative rounded-lg p-3 text-left transition-all hover:scale-[1.03] active:scale-[0.98]"
-                      style={{
-                        backgroundColor:
-                          "color-mix(in srgb, " + game.color + " 8%, #0a0a0f)",
-                        border:
-                          "1px solid color-mix(in srgb, " +
-                          game.color +
-                          " 30%, transparent)",
-                      }}
-                    >
-                      <span className="text-2xl block mb-1">{game.icon}</span>
-                      <span
-                        className="text-sm font-bold tracking-wider block"
-                        style={{ color: game.color }}
-                      >
-                        {game.name}
-                      </span>
-                      <span
-                        className="text-[10px] tracking-wide block mt-0.5 leading-tight"
-                        style={{ color: "#888" }}
-                      >
-                        {game.description}
-                      </span>
-                      <span
-                        className="absolute top-2 right-2 text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded"
-                        style={{
-                          color: game.color,
-                          backgroundColor:
-                            "color-mix(in srgb, " +
-                            game.color +
-                            " 15%, transparent)",
-                        }}
-                      >
-                        {game.players}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <p
-                  className="text-[10px] tracking-wide text-center mt-3 leading-relaxed"
-                  style={{ color: "#6f7f8f" }}
-                >
-                  Estos dos son solo para prueba privada hasta reemplazarlos por
-                  juegos open source.
-                </p>
-              </div>
             </div>
           </div>
         )}
@@ -787,7 +720,7 @@ function loadEmulator(
   win.EJS_dontExtractRom = true;
 
   // NeoGeo/Arcade games need the neogeo.zip BIOS
-  if (core === "fbneo") {
+  if (core === "arcade") {
     win.EJS_biosUrl = "/games/bios/neogeo.zip";
   }
   win.EJS_DEBUG_XX = false;

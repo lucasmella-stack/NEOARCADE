@@ -166,31 +166,6 @@
       <div class="spin"></div>
       <p id="loading-status">PREPARANDO METAL SLUG...</p>
     </div>
-    <div id="bios-panel" class="panel hidden">
-      <div class="card">
-        <h2>BIOS NEO GEO NECESARIO</h2>
-        <p>
-          Metal Slug necesita el archivo <code>neogeo.zip</code>. Para evitar
-          depender del servidor, cárgalo una vez y lo guardaremos solo en este
-          navegador.
-        </p>
-        <ul class="list">
-          <li>Archivo requerido: <code>neogeo.zip</code></li>
-          <li>No se sube al servidor, queda local en tu navegador</li>
-          <li>
-            Después de cargarlo, este juego y Super Sidekicks usarán el mismo
-            BIOS
-          </li>
-        </ul>
-        <div class="actions">
-          <button id="bios-button" class="primary-btn">
-            USAR BIOS NEO GEO
-          </button>
-          <button class="secondary-btn" onclick="history.back()">VOLVER</button>
-        </div>
-        <input id="bios-input" type="file" accept=".zip" hidden />
-      </div>
-    </div>
     <div id="error-panel" class="panel hidden">
       <div class="card">
         <h2>NO SE PUDO INICIAR</h2>
@@ -209,17 +184,8 @@
         gameTitle: "Metal Slug",
         romUrl: "mslug.zip",
         playerSelector: "#game-container",
-        loadingText: "PREPARANDO METAL SLUG...",
         loadingOverlayId: "loading-overlay",
         loadingStatusId: "loading-status",
-        biosPanelId: "bios-panel",
-        biosInputId: "bios-input",
-        biosButtonId: "bios-button",
-        errorPanelId: "error-panel",
-        errorTextId: "error-text",
-        retryButtonId: "retry-button",
-        buttonLabel: "USAR BIOS NEO GEO",
-        serverBiosUrl: "/games/bios/neogeo.zip",
       });
     </script>
   </body>
