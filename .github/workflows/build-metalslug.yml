@@ -5,11 +5,10 @@ name: 🔫 Build Metal Slug (Unity → WebGL)
 # to public/games/slug/ in this repo.
 #
 # Prerequisites (one-time setup):
-#   1. Run the "Get Unity License (run once)" workflow and follow its instructions.
-#   2. Add these GitHub Secrets (Settings → Secrets → Actions):
-#        UNITY_LICENSE  = content of the .ulf file
-#        UNITY_EMAIL    = your Unity account email
-#        UNITY_PASSWORD = your Unity account password
+#   Add these GitHub Secrets (Settings → Secrets → Actions):
+#     UNITY_EMAIL    = your Unity account email (free Unity account)
+#     UNITY_PASSWORD = your Unity account password
+#   That's it — Personal license is activated automatically, no serial needed.
 
 on:
   workflow_dispatch:
@@ -99,9 +98,9 @@ jobs:
       - name: Build Unity project
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE_TYPE: Personal
         with:
           unityVersion: ${{ inputs.unity_version || '2018.3.8f1' }}
           projectPath: MetalSlugClone
