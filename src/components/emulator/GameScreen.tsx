@@ -704,7 +704,8 @@ function loadEmulator(
   win.EJS_player = "#emulator";
   win.EJS_gameUrl = romUrl;
   win.EJS_core = core;
-  win.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+  win.EJS_pathtodata =
+    "https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@4.0.9/data/";
   win.EJS_startOnLoaded = true;
   win.EJS_DEBUG_XX = false;
   win.EJS_gameName = fileName.replace(/\.\w+$/, "");
@@ -729,7 +730,8 @@ function loadEmulator(
 
   // Cargar EmulatorJS desde CDN
   const script = document.createElement("script");
-  script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+  script.src =
+    "https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@4.0.9/data/loader.js";
   script.async = true;
   script.setAttribute("data-emulatorjs", "1");
   document.body.appendChild(script);
