@@ -331,7 +331,20 @@ def main() -> None:
         action="store_true",
         help="Do NOT delete the temporary clone after build.",
     )
+    parser.add_argument(
+        "--patch-only",
+        metavar="INDEX_HTML",
+        help="Skip build: only inject the gamepad bridge into an existing index.html.",
+    )
     args = parser.parse_args()
+
+    # ── Patch-only mode (used by GitHub Actions after game-ci builds) ──────
+    if args.patch_only:
+        target = Path(args.patch_only)
+        print(f"[patch-only] Patching {target} …")
+        patch_index_html(target.parent)
+        print("Done.")
+        return
 
     tmp_dir: str | None = None
 
