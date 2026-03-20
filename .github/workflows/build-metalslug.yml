@@ -107,6 +107,7 @@ jobs:
           targetPlatform: WebGL
           buildMethod: WebGLBuilder.Build
           buildsPath: MetalSlugClone/WebGLBuild
+          versioning: None
 
       # ── 5. Copy build → public/games/slug/ ───────────────────────────────
       - name: Copy WebGL output to public/games/slug
