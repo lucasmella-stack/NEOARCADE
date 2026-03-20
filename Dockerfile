@@ -72,8 +72,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Compile server.ts → server.cjs so "node server.cjs" works at runtime
-RUN node_modules/.bin/tsx --version && \
-    node_modules/.bin/esbuild server.ts \
+RUN pnpm exec esbuild server.ts \
       --bundle \
       --platform=node \
       --target=node20 \
@@ -84,10 +83,7 @@ RUN node_modules/.bin/tsx --version && \
       --external:socket.io-client \
       --external:uuid \
       --external:react \
-      --external:react-dom \
-    2>/dev/null || \
-    node_modules/.bin/tsx build-server.mjs 2>/dev/null || \
-    cp server.ts server.cjs.ts  # fallback: will use tsx at runtime
+      --external:react-dom
 
 RUN pnpm build
 
@@ -105,17 +101,12 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile
 
-# Also need tsx for server.ts if esbuild compile failed
-COPY --from=deps /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
-COPY --from=deps /app/node_modules/tsx ./node_modules/tsx
-
 # Next.js output
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-# Server — try compiled CJS first, always include TS as fallback for tsx
-COPY --from=builder /app/server.ts ./server.ts
-RUN if [ -f /app/server.cjs ]; then cp /app/server.cjs ./server.cjs; fi || true
+# Compiled server bundle (esbuild output from builder stage)
+COPY --from=builder /app/server.cjs ./server.cjs
 
 # Config
 COPY next.config.* ./
@@ -131,5 +122,4 @@ COPY --from=sf-builder /game/build/web/ ./public/games/sf/
 
 EXPOSE 3000
 
-# Use tsx to run server.ts (handles TypeScript natively)
-CMD ["node_modules/.bin/tsx", "server.ts"]
+CMD ["node", "server.cjs"]

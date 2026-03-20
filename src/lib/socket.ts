@@ -4,7 +4,12 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:3000";
+    // Use the current page origin so it works from any domain
+    // (localhost, ngrok, production) without env var configuration
+    const url =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost:3000";
     socket = io(url, {
       autoConnect: false,
       reconnectionAttempts: 5,

@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Custom server (server.ts con Socket.io) — no standalone
   allowedDevOrigins: ["*.lhr.life", "*.ngrok-free.app", "*.ngrok-free.dev"],
   async headers() {

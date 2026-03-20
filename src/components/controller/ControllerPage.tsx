@@ -440,21 +440,21 @@ export function ControllerPage() {
           </div>
         </div>
 
-        {/* ── Right: A / B / X / Y — SNES diamond ── */}
+        {/* ── Right: Y / B / A — triangle layout ── */}
         <div className="pad-right">
           <div className="abxy-diamond">
             <ControlButton
-              button="x"
-              label="X"
-              className="action-btn btn-x"
+              button="y"
+              label="Y"
+              className="action-btn btn-y"
               onPress={press}
               onRelease={release}
             />
             <div className="abxy-mid">
               <ControlButton
-                button="y"
-                label="Y"
-                className="action-btn btn-y"
+                button="b"
+                label="B"
+                className="action-btn btn-b"
                 onPress={press}
                 onRelease={release}
               />
@@ -466,13 +466,6 @@ export function ControllerPage() {
                 onRelease={release}
               />
             </div>
-            <ControlButton
-              button="b"
-              label="B"
-              className="action-btn btn-b"
-              onPress={press}
-              onRelease={release}
-            />
           </div>
         </div>
       </div>
@@ -764,13 +757,12 @@ const padStyles = `
     flex: 0 0 auto;
   }
 
-  /* SNES-style diamond: X on top, Y-A in middle row, B on bottom */
+  /* SNES-style triangle: Y on top, B-A in bottom row */
   .abxy-diamond {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(2px, 1vmin, 6px);
-    transform: rotate(-12deg);
+    gap: clamp(4px, 1.5vmin, 8px);
   }
 
   .abxy-mid {
@@ -828,24 +820,6 @@ const padStyles = `
     transform: translateY(3px);
     box-shadow:
       0 1px 0 ${C.btnYellowDark},
-      inset 0 2px 6px rgba(0,0,0,0.3);
-  }
-
-  /* X — azul (like SNES) */
-  .btn-x {
-    color: ${C.white};
-    background: linear-gradient(145deg, #4488ff, #2255cc);
-    border-color: #2255cc;
-    box-shadow:
-      0 4px 0 #2255cc,
-      0 6px 12px rgba(0,0,0,0.35),
-      inset 0 2px 0 rgba(255,255,255,0.18);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  }
-  .btn-x:active {
-    transform: translateY(3px);
-    box-shadow:
-      0 1px 0 #2255cc,
       inset 0 2px 6px rgba(0,0,0,0.3);
   }
 

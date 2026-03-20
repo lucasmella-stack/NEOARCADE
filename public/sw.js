@@ -1,4 +1,4 @@
-const CACHE_NAME = "neoarcade-v3";
+const CACHE_NAME = "neoarcade-v4";
 // NOTE: game files (/games/*) are intentionally excluded from pre-cache.
 // They use network-first strategy so updates are always picked up.
 const CORE_ASSETS = [
@@ -56,8 +56,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
+  // Never intercept Next.js static assets — they use content-hashed filenames
+  // and must always match the current build. Caching them causes 404s on rebuild.
+  if (url.pathname.startsWith("/_next/")) return;
+
   // Network-first for game files — always get the latest version
-  if (url.pathname.startsWith("/games/")) {
+  if (
+    url.pathname.startsWith("/games/") ||
+    url.pathname === "/" ||
+    url.pathname === "/controller"
+  ) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {

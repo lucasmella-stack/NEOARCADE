@@ -18,10 +18,7 @@ app.prepare().then(() => {
 
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin:
-        process.env.NODE_ENV === "production"
-          ? process.env.ALLOWED_ORIGIN ?? ""
-          : "*",
+      origin: "*",
       methods: ["GET", "POST"],
     },
   });
@@ -42,7 +39,7 @@ app.prepare().then(() => {
 
       const room = rooms.get(roomId)!;
       const playerCount = [...room].filter((id) =>
-        id.startsWith("player:")
+        id.startsWith("player:"),
       ).length;
 
       if (playerCount >= 2) {
@@ -90,7 +87,7 @@ app.prepare().then(() => {
         room.delete(`screen:${socket.id}`);
 
         const playerCount = [...room].filter((id) =>
-          id.startsWith("player:")
+          id.startsWith("player:"),
         ).length;
 
         if (room.size === 0) {
@@ -105,7 +102,7 @@ app.prepare().then(() => {
 
   httpServer.listen(port, () => {
     console.log(
-      `> NEOARCADE running on http://localhost:${port} [${dev ? "dev" : "prod"}]`
+      `> NEOARCADE running on http://localhost:${port} [${dev ? "dev" : "prod"}]`,
     );
   });
 });
