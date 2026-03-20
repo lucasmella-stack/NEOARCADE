@@ -113,10 +113,9 @@ COPY --from=deps /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-# Server
+# Server — try compiled CJS first, always include TS as fallback for tsx
 COPY --from=builder /app/server.ts ./server.ts
-COPY --from=builder /app/server.cjs ./server.cjs 2>/dev/null || true
-COPY server.ts ./
+RUN if [ -f /app/server.cjs ]; then cp /app/server.cjs ./server.cjs; fi || true
 
 # Config
 COPY next.config.* ./

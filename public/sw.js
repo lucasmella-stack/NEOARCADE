@@ -1,11 +1,11 @@
-const CACHE_NAME = "neoarcade-v1";
+const CACHE_NAME = "neoarcade-v3";
+// NOTE: game files (/games/*) are intentionally excluded from pre-cache.
+// They use network-first strategy so updates are always picked up.
 const CORE_ASSETS = [
   "/",
   "/controller",
   "/logo.png",
   "/logo.webp",
-  "/games/slug/index.html",
-  "/games/sf/index.html",
   "/games/mario/index.html",
   "/games/pong.html",
   "/games/snake.html",
@@ -54,6 +54,31 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  const url = new URL(event.request.url);
+
+  // Network-first for game files — always get the latest version
+  if (url.pathname.startsWith("/games/")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (
+            response &&
+            response.status === 200 &&
+            response.type === "basic"
+          ) {
+            const responseClone = response.clone();
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request)),
+    );
+    return;
+  }
+
+  // Cache-first for everything else
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

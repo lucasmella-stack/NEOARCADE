@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>METAL SLUG — NEOARCADE</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0a0a0f;
+        color: #ff9900;
+        font-family: "Courier New", monospace;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        overflow: hidden;
+      }
+      .icon {
+        font-size: 64px;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(0.95);
+        }
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        text-shadow:
+          0 0 20px #ff9900,
+          0 0 40px #ff990060;
+      }
+      p {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        color: #ff990099;
+        text-transform: uppercase;
+      }
+      .badge {
+        margin-top: 8px;
+        padding: 6px 18px;
+        border: 1px solid #ff990040;
+        border-radius: 6px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: #ff990066;
+        text-transform: uppercase;
+        background: rgba(255, 153, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="icon">🔫</div>
+    <h1>Metal Slug</h1>
+    <p>Unity Clone — Próximamente</p>
+    <div class="badge">Build en progreso</div>
+  </body>
+</html>

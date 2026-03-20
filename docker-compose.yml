@@ -14,7 +14,7 @@ services:
       - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL:-http://localhost:3000}
       - NEXT_PUBLIC_SPONSOR_URL=${NEXT_PUBLIC_SPONSOR_URL:-https://ko-fi.com/lucasmella}
     networks:
-      - traefik_net
+      - traefik-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.neoarcade.rule=Host(`neoarcade.localhost`)"
@@ -29,5 +29,5 @@ services:
       start_period: 40s
 
 networks:
-  traefik_net:
+  traefik-network:
     external: true

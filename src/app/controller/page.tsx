@@ -1,5 +1,6 @@
-import type { Metadata, Viewport } from "next";
 import { ControllerPage } from "@/components/controller/ControllerPage";
+import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "NEOARCADE — Controller",
@@ -15,5 +16,9 @@ export const viewport: Viewport = {
 };
 
 export default function Controller() {
-  return <ControllerPage />;
+  return (
+    <Suspense>
+      <ControllerPage />
+    </Suspense>
+  );
 }
