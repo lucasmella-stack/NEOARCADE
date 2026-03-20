@@ -5,432 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>METAL SLUG — NEOARCADE</title>
     <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      :root {
-        --neon: #00d4ff;
-        --neon2: #0080ff;
-        --bg: #0a0a0f;
-        --card: #0d1117;
-        --glow: 0 0 18px #00d4ff, 0 0 36px #00d4ff44;
-        --glow-sm: 0 0 8px #00d4ff88;
-      }
-
-      html,
-      body {
+      *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
         height: 100%;
-        background: var(--bg);
+        background: #0a0a0f;
         color: #e0e0e0;
         font-family: "Courier New", Courier, monospace;
+        overflow: hidden;
       }
-
-      /* ───── PICKER ───── */
-      #picker {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 2rem 1rem;
-        gap: 1.5rem;
-      }
-
-      #picker h1 {
-        font-size: clamp(1.4rem, 5vw, 2.4rem);
-        color: var(--neon);
-        text-shadow: var(--glow);
-        letter-spacing: 4px;
-        text-transform: uppercase;
-      }
-
-      #picker p.sub {
-        color: #888;
-        font-size: 0.85rem;
-        text-align: center;
-        max-width: 500px;
-        line-height: 1.6;
-      }
-
-      .rom-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1rem;
-        width: 100%;
-        max-width: 620px;
-      }
-
-      .rom-card {
-        border: 1px solid var(--neon2);
-        border-radius: 8px;
-        padding: 1rem 0.75rem;
-        background: var(--card);
-        text-align: center;
-        cursor: pointer;
-        transition:
-          box-shadow 0.15s,
-          transform 0.1s,
-          border-color 0.15s;
-        user-select: none;
-      }
-      .rom-card:hover {
-        box-shadow: var(--glow);
-        border-color: var(--neon);
-        transform: scale(1.03);
-      }
-      .rom-card .icon {
-        font-size: 1.8rem;
-        margin-bottom: 0.35rem;
-      }
-      .rom-card .title {
-        font-size: 0.78rem;
-        color: var(--neon);
-        letter-spacing: 1px;
-      }
-      .rom-card .sub {
-        font-size: 0.68rem;
-        color: #555;
-        margin-top: 0.2rem;
-      }
-
-      .divider {
-        width: 100%;
-        max-width: 620px;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #444;
-        font-size: 0.75rem;
-      }
-      .divider::before,
-      .divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: #2a2a3a;
-      }
-
-      .drop-zone {
-        width: 100%;
-        max-width: 620px;
-        border: 2px dashed #2a2a3a;
-        border-radius: 10px;
-        padding: 1.5rem;
-        text-align: center;
-        color: #555;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-      .drop-zone:hover,
-      .drop-zone.drag-over {
-        border-color: var(--neon);
-        color: var(--neon);
-      }
-      .drop-zone input {
-        display: none;
-      }
-      .drop-zone .dz-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-      }
-
-      .note {
-        font-size: 0.72rem;
-        color: #444;
-        text-align: center;
-        max-width: 500px;
-        line-height: 1.5;
-      }
-
-      /* ───── EMULATOR ───── */
-      #emulator-wrap {
-        display: none;
-        width: 100%;
-        height: 100vh;
-        background: #000;
-        position: relative;
-      }
-
-      #game-container {
-        width: 100%;
-        height: 100%;
-      }
-
+      #emulator-wrap { display: flex; flex-direction: column; height: 100vh; }
       #back-btn {
-        position: fixed;
-        top: 12px;
-        left: 12px;
-        z-index: 999;
-        background: rgba(0, 0, 0, 0.75);
-        border: 1px solid var(--neon2);
-        color: var(--neon);
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-family: inherit;
-        font-size: 0.8rem;
-        cursor: pointer;
-        letter-spacing: 1px;
+        position: fixed; top: 10px; left: 12px; z-index: 100;
+        background: rgba(0,0,0,0.7); border: 1px solid #00d4ff44;
+        color: #00d4ff; font-family: inherit; font-size: 0.75rem;
+        padding: 4px 10px; cursor: pointer; border-radius: 4px; letter-spacing: 1px;
       }
-      #back-btn:hover {
-        box-shadow: var(--glow-sm);
-      }
-
-      /* ───── LOADING ───── */
+      #back-btn:hover { background: #00d4ff22; }
+      #game-container { flex: 1; width: 100%; height: 100%; }
       #loading-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
-        z-index: 1000;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1.2rem;
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1.2rem;
+        background: #0a0a0f; z-index: 50; transition: opacity 0.4s;
       }
-      #loading-overlay.visible {
-        display: flex;
-      }
+      #loading-overlay.hidden { opacity: 0; pointer-events: none; }
       .spin {
-        width: 48px;
-        height: 48px;
-        border: 3px solid #1a1a2e;
-        border-top-color: var(--neon);
-        border-radius: 50%;
+        width: 44px; height: 44px; border: 3px solid #00d4ff33;
+        border-top-color: #00d4ff; border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
-      #loading-overlay p {
-        color: var(--neon);
-        font-size: 0.9rem;
-        letter-spacing: 2px;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      #loading-overlay p { color: #00d4ff; font-size: 0.85rem; letter-spacing: 3px; text-shadow: 0 0 10px #00d4ff; }
     </style>
   </head>
   <body>
-    <!-- ═══ PICKER ═══ -->
-    <section id="picker">
-      <h1>🔫 Metal Slug</h1>
-      <p class="sub">
-        Emulado con
-        <strong style="color: var(--neon)">FinalBurn Neo</strong> (NeoGeo).
-        Cargá tu propia ROM <code>.zip</code> — los controles móviles funcionan
-        automáticamente.
-      </p>
-
-      <div class="rom-grid">
-        <div class="rom-card" onclick="pickPreset('mslug')">
-          <div class="icon">1️⃣</div>
-          <div class="title">Metal Slug</div>
-          <div class="sub">mslug.zip</div>
-        </div>
-        <div class="rom-card" onclick="pickPreset('mslug2')">
-          <div class="icon">2️⃣</div>
-          <div class="title">Metal Slug 2</div>
-          <div class="sub">mslug2.zip</div>
-        </div>
-        <div class="rom-card" onclick="pickPreset('mslugx')">
-          <div class="icon">✖️</div>
-          <div class="title">Metal Slug X</div>
-          <div class="sub">mslugx.zip</div>
-        </div>
-        <div class="rom-card" onclick="pickPreset('mslug3')">
-          <div class="icon">3️⃣</div>
-          <div class="title">Metal Slug 3</div>
-          <div class="sub">mslug3.zip</div>
-        </div>
-      </div>
-
-      <div class="divider">o cargá cualquier ROM</div>
-
-      <div
-        class="drop-zone"
-        id="drop-zone"
-        onclick="document.getElementById('rom-input').click()"
-      >
-        <div class="dz-icon">📂</div>
-        <div>Arrastrá o seleccioná tu ROM <code>.zip</code></div>
-        <div style="font-size: 0.7rem; margin-top: 0.4rem; color: #444">
-          NeoGeo (FBNeo) · SNES · NES · GBA · GB
-        </div>
-        <input
-          type="file"
-          id="rom-input"
-          accept=".zip,.nes,.smc,.sfc,.gba,.gb,.gbc,.n64,.z64"
-        />
-      </div>
-
-      <p class="note">
-        ⓘ Las ROMs no se incluyen. Tenés que proveerlas. Para NeoGeo asegurate
-        de tener <code>neogeo.zip</code> (BIOS).
-      </p>
-    </section>
-
-    <!-- ═══ EMULATOR ═══ -->
+    <button id="back-btn" onclick="history.back()">&#8592; VOLVER</button>
     <div id="emulator-wrap">
-      <button id="back-btn" onclick="goBack()">← VOLVER</button>
       <div id="game-container"></div>
     </div>
-
     <div id="loading-overlay">
       <div class="spin"></div>
-      <p>CARGANDO EMULADOR…</p>
+      <p>CARGANDO METAL SLUG...</p>
     </div>
-
     <script>
-      /* ── NEOARCADE gamepad bridge ─────────────────────────────
-   Recibe eventos postMessage { type:"input", player:1|2,
-   button:"up"|"down"|"left"|"right"|"a"|"b"|"y"|"start",
-   state:"pressed"|"released" }
-   y los expone como navigator.getGamepads() para EmulatorJS.
-   ──────────────────────────────────────────────────────── */
+      /* NEOARCADE gamepad bridge */
       (function () {
-        var BTN = { a: 0, b: 1, y: 3, start: 9 };
+        var BTN  = { a: 0, b: 1, y: 3, start: 9 };
         var AXIS = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
-
-        function mkBtn(p) {
-          return { pressed: !!p, touched: !!p, value: p ? 1 : 0 };
-        }
-
+        function mkBtn(p) { return { pressed: !!p, touched: !!p, value: p ? 1 : 0 }; }
         function mkPad(i) {
-          return {
-            id: "NEOARCADE-P" + (i + 1),
-            index: i,
-            connected: false,
-            timestamp: 0,
-            mapping: "standard",
-            axes: new Float64Array(4),
-            buttons: Array.from({ length: 17 }, function () {
-              return mkBtn(false);
-            }),
-          };
+          return { id: "NEOARCADE-P" + (i+1), index: i, connected: false, timestamp: 0,
+            mapping: "standard", axes: new Float64Array(4),
+            buttons: Array.from({ length: 17 }, function() { return mkBtn(false); }) };
         }
-
         var pads = [mkPad(0), mkPad(1)];
         var announced = [false, false];
-
-        window.addEventListener("message", function (e) {
+        window.addEventListener("message", function(e) {
           var d = e.data;
           if (!d || d.type !== "input") return;
           var i = (d.player || 1) - 1;
           if (i < 0 || i > 1) return;
-          var pad = pads[i];
-          pad.timestamp = performance.now();
+          var pad = pads[i]; pad.timestamp = performance.now();
           var p = d.state === "pressed";
-          if (BTN[d.button] !== undefined) {
-            pad.buttons[BTN[d.button]] = mkBtn(p);
-          } else if (AXIS[d.button]) {
-            pad.axes[AXIS[d.button][0]] = p ? AXIS[d.button][1] : 0;
-          }
-          if (!pad.connected) {
-            pad.connected = true;
-            if (!announced[i]) {
-              announced[i] = true;
-              window.dispatchEvent(
-                new GamepadEvent("gamepadconnected", { gamepad: pad }),
-              );
-            }
-          }
+          if (BTN[d.button] !== undefined) pad.buttons[BTN[d.button]] = mkBtn(p);
+          else if (AXIS[d.button]) pad.axes[AXIS[d.button][0]] = p ? AXIS[d.button][1] : 0;
+          if (!pad.connected) { pad.connected = true; if (!announced[i]) { announced[i]=true; window.dispatchEvent(new GamepadEvent("gamepadconnected",{gamepad:pad})); } }
         });
-
-        navigator.getGamepads = function () {
-          return pads;
-        };
+        navigator.getGamepads = function() { return pads; };
         console.log("[NEOARCADE] Gamepad bridge ready");
       })();
 
-      /* ── ROM state ─────────────────────────────── */
-      var pendingCore = "fbn";
-
-      function pickPreset(name) {
-        pendingCore = "fbn";
-        document.getElementById("rom-input").click();
-      }
-
-      function coreForFile(name) {
-        var ext = name.split(".").pop().toLowerCase();
-        return (
-          {
-            zip: "fbn",
-            nes: "nes",
-            smc: "snes",
-            sfc: "snes",
-            gba: "gba",
-            gb: "gb",
-            gbc: "gbc",
-            n64: "n64",
-            z64: "n64",
-          }[ext] || "fbn"
-        );
-      }
-
-      /* ── File input ────────────────────────────── */
-      document
-        .getElementById("rom-input")
-        .addEventListener("change", function (e) {
-          var f = e.target.files[0];
-          if (f) launch(f, pendingCore || coreForFile(f.name));
-        });
-
-      var dz = document.getElementById("drop-zone");
-      dz.addEventListener("dragover", function (e) {
-        e.preventDefault();
-        dz.classList.add("drag-over");
-      });
-      dz.addEventListener("dragleave", function () {
-        dz.classList.remove("drag-over");
-      });
-      dz.addEventListener("drop", function (e) {
-        e.preventDefault();
-        dz.classList.remove("drag-over");
-        var f = e.dataTransfer.files[0];
-        if (f) launch(f, coreForFile(f.name));
-      });
-
-      /* ── Launch EmulatorJS ─────────────────────── */
-      function launch(file, core) {
-        document.getElementById("loading-overlay").classList.add("visible");
-        document.getElementById("picker").style.display = "none";
-
-        window.EJS_player = "#game-container";
-        window.EJS_core = core;
-        window.EJS_gameUrl = URL.createObjectURL(file);
-        window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
-        window.EJS_startOnLoaded = true;
-        window.EJS_language = "es";
-        window.EJS_onGameStart = function () {
-          document
-            .getElementById("loading-overlay")
-            .classList.remove("visible");
-          document.getElementById("emulator-wrap").style.display = "block";
-        };
-
-        var s = document.createElement("script");
-        s.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
-        s.onerror = function () {
-          document
-            .getElementById("loading-overlay")
-            .classList.remove("visible");
-          document.getElementById("picker").style.display = "flex";
-          alert("No se pudo cargar EmulatorJS. Revisá tu conexión a internet.");
-        };
-        document.body.appendChild(s);
-      }
-
-      function goBack() {
-        location.reload();
-      }
+      /* Auto-launch */
+      window.EJS_player        = "#game-container";
+      window.EJS_core          = "fbn";
+      window.EJS_gameUrl       = "mslug.zip";
+      window.EJS_pathtodata    = "https://cdn.emulatorjs.org/stable/data/";
+      window.EJS_startOnLoaded = true;
+      window.EJS_language      = "es";
+      window.EJS_onGameStart   = function() { document.getElementById("loading-overlay").classList.add("hidden"); };
+      var s = document.createElement("script");
+      s.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+      document.body.appendChild(s);
     </script>
   </body>
 </html>
