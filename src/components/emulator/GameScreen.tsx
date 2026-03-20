@@ -706,6 +706,7 @@ function loadEmulator(
   win.EJS_core = core;
   win.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
   win.EJS_startOnLoaded = true;
+  win.EJS_dontExtractRom = true;
   win.EJS_DEBUG_XX = false;
   win.EJS_gameName = fileName.replace(/\.\w+$/, "");
   win.EJS_color = "#00d4ff";
