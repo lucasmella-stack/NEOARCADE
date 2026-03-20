@@ -3,8 +3,14 @@
 // writes it at the correct VFS path ("neogeo.zip") where FBNeo looks for it.
 (function () {
   var INPUT_EVENT_TYPES = { input: true, "neoarcade-input": true };
+  // NeoGeo/FBNeo usa botones digitales de D-pad (12-15 en la API Gamepad),
+  // no ejes analógicos. Los botones de acción siguen la convención RetroArch:
+  //   a (1=BUTTON_2) → RETRO B → NeoGeo A (disparar)
+  //   b (0=BUTTON_1) → RETRO A → NeoGeo B (saltar)
+  //   y (3=BUTTON_4) → RETRO Y → NeoGeo C (granada/tercer botón)
+  //   select (8) → RETRO SELECT → insertar moneda
+  //   start  (9) → RETRO START  → comenzar 1P
   var BUTTON_MAP = { a: 1, b: 0, x: 2, y: 3, select: 8, start: 9 };
-  var AXIS_MAP = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
   var DPAD_BUTTON_MAP = { up: 12, down: 13, left: 14, right: 15 };
 
   function createButtonState(pressed) {
@@ -15,8 +21,8 @@
     return {
       id: "NEOARCADE-P" + (index + 1),
       index: index,
-      connected: false,
-      timestamp: 0,
+      connected: true,
+      timestamp: performance.now(),
       mapping: "standard",
       axes: new Float64Array(4),
       buttons: Array.from({ length: 17 }, function () {
@@ -27,7 +33,6 @@
 
   function installBridge() {
     var pads = [createPad(0), createPad(1)];
-    var announced = [false, false];
     window.addEventListener("message", function (event) {
       var data = event.data;
       if (!data || !INPUT_EVENT_TYPES[data.type]) return;
@@ -39,22 +44,9 @@
       if (BUTTON_MAP[data.button] !== undefined) {
         pad.buttons[BUTTON_MAP[data.button]] = createButtonState(isPressed);
       }
-      if (AXIS_MAP[data.button]) {
-        var axisConfig = AXIS_MAP[data.button];
-        pad.axes[axisConfig[0]] = isPressed ? axisConfig[1] : 0;
-      }
       if (DPAD_BUTTON_MAP[data.button] !== undefined) {
         pad.buttons[DPAD_BUTTON_MAP[data.button]] =
           createButtonState(isPressed);
-      }
-      if (!pad.connected) {
-        pad.connected = true;
-        if (!announced[playerIndex] && typeof GamepadEvent === "function") {
-          announced[playerIndex] = true;
-          window.dispatchEvent(
-            new GamepadEvent("gamepadconnected", { gamepad: pad }),
-          );
-        }
       }
     });
     navigator.getGamepads = function () {
@@ -80,9 +72,40 @@
       window.EJS_pathtodata = "/emulatorjs/data/";
       window.EJS_startOnLoaded = true;
       window.EJS_disableAutoLang = false;
+      // Envía un input simulado usando el mismo bridge de mensajes
+      function simBtn(btn, player, state) {
+        window.dispatchEvent(
+          new MessageEvent("message", {
+            data: {
+              type: "neoarcade-input",
+              player: player,
+              button: btn,
+              state: state,
+            },
+          }),
+        );
+      }
+      function autoPress(btn, player, holdMs, thenFn) {
+        simBtn(btn, player, "pressed");
+        setTimeout(function () {
+          simBtn(btn, player, "released");
+          if (thenFn) setTimeout(thenFn, 200);
+        }, holdMs || 150);
+      }
+
       window.EJS_onGameStart = function () {
         if (overlay) overlay.classList.add("hidden");
         if (typeof config.onGameStart === "function") config.onGameStart();
+        // Los juegos FBNeo/NeoGeo son simuladores de arcade que requieren
+        // insertar moneda (SELECT) antes de poder jugarse. Lo hacemos
+        // automáticamente tras 1.5 s para que el emulador termine de
+        // inicializar, luego el usuario presiona START para comenzar.
+        setTimeout(function () {
+          autoPress("select", 1, 150, function () {
+            // Segunda moneda para que P2 también pueda iniciar su partida
+            autoPress("select", 1, 150, null);
+          });
+        }, 1500);
       };
       var retryBtn = document.getElementById("retry-button");
       if (retryBtn)
