@@ -114,7 +114,8 @@ type CoreKey = keyof typeof CORES;
 const BUTTON_INDEX: Record<string, number> = {
   b: 0,
   a: 1,
-  y: 2,
+  x: 2,
+  y: 3,
   select: 8,
   start: 9,
 };
@@ -707,6 +708,11 @@ function loadEmulator(
   win.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
   win.EJS_startOnLoaded = true;
   win.EJS_dontExtractRom = true;
+
+  // NeoGeo/Arcade games need the neogeo.zip BIOS
+  if (core === "fbneo") {
+    win.EJS_biosUrl = "/games/bios/neogeo.zip";
+  }
   win.EJS_DEBUG_XX = false;
   win.EJS_gameName = fileName.replace(/\.\w+$/, "");
   win.EJS_color = "#00d4ff";

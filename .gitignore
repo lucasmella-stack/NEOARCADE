@@ -16,6 +16,9 @@ Juegos/
 # Excepciones: ROMs bundleadas en public/ sí se trackean
 !public/games/slug/mslug.zip
 !public/games/sidekicks/ssideki.zip
+# BIOS files — copyrighted, not distributed
+public/games/bios/*.zip
+!public/games/bios/.gitkeep
 # Unity activation files
 *.alf
 *.ulf

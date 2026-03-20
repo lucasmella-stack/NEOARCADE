@@ -97,8 +97,9 @@
     <script>
       /* NEOARCADE gamepad bridge */
       (function () {
-        var BTN = { a: 0, b: 1, y: 3, start: 9 };
+        var BTN = { a: 1, b: 0, x: 2, y: 3, select: 8, start: 9 };
         var AXIS = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
+        var DPAD_BTN = { up: 12, down: 13, left: 14, right: 15 };
         function mkBtn(p) {
           return { pressed: !!p, touched: !!p, value: p ? 1 : 0 };
         }
@@ -119,7 +120,8 @@
         var announced = [false, false];
         window.addEventListener("message", function (e) {
           var d = e.data;
-          if (!d || d.type !== "input") return;
+          if (!d || (d.type !== "input" && d.type !== "neoarcade-input"))
+            return;
           var i = (d.player || 1) - 1;
           if (i < 0 || i > 1) return;
           var pad = pads[i];
@@ -127,8 +129,11 @@
           var p = d.state === "pressed";
           if (BTN[d.button] !== undefined)
             pad.buttons[BTN[d.button]] = mkBtn(p);
-          else if (AXIS[d.button])
+          if (AXIS[d.button]) {
             pad.axes[AXIS[d.button][0]] = p ? AXIS[d.button][1] : 0;
+          }
+          if (DPAD_BTN[d.button] !== undefined)
+            pad.buttons[DPAD_BTN[d.button]] = mkBtn(p);
           if (!pad.connected) {
             pad.connected = true;
             if (!announced[i]) {
@@ -150,6 +155,7 @@
       window.EJS_core = "fbneo";
       window.EJS_gameUrl = "mslug.zip";
       window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
+      window.EJS_biosUrl = "/games/bios/neogeo.zip";
       window.EJS_startOnLoaded = true;
       window.EJS_language = "en";
       window.EJS_dontExtractRom = true;
