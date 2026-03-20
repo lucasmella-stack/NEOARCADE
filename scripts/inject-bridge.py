@@ -20,8 +20,8 @@ BRIDGE = """
 <!-- NEOARCADE Joystick Bridge — injected at build time -->
 <script>
 (function () {
-  var MAP = { left: 97, right: 100, up: 119, down: 115, a: 114, b: 116 };
-  // a=97 d=100 w=119 s=115 r=114 t=116
+  var MAP = { left: 97, right: 100, up: 119, down: 115, a: 114, b: 116, y: 121 };
+  // a=97 d=100 w=119 s=115 r=114 t=116 y=121
 
   function fireKey(type, code) {
     var opts = {

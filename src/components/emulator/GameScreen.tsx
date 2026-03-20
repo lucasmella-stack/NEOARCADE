@@ -114,6 +114,7 @@ type CoreKey = keyof typeof CORES;
 const BUTTON_INDEX: Record<string, number> = {
   b: 0,
   a: 1,
+  y: 2,
   select: 8,
   start: 9,
 };
