@@ -15,6 +15,7 @@ Juegos/
 *.rom
 # Excepciones: ROMs bundleadas en public/ sí se trackean
 !public/games/slug/mslug.zip
+!public/games/sidekicks/ssideki.zip
 # Unity activation files
 *.alf
 *.ulf

@@ -30,6 +30,15 @@ const ARCADE_GAMES: ArcadeGame[] = [
     icon: "🔫",
   },
   {
+    id: "sidekicks",
+    name: "SUPER SIDEKICKS (NeoGeo)",
+    description: "Fútbol arcade NeoGeo. 2 jugadores simultáneos.",
+    src: "/games/sidekicks/index.html",
+    players: "1-2P",
+    color: "#44ff88",
+    icon: "⚽",
+  },
+  {
     id: "mario",
     name: "MARIO",
     description: "Plataformas clásico con salto, carrera y tuberías.",
