@@ -659,7 +659,11 @@ export function GameScreen() {
               }}
             >
               {Object.keys(CORES).map((key) => (
-                <option key={key} value={key}>
+                <option
+                  key={key}
+                  value={key}
+                  style={{ background: "#011246", color: "#58FAFD" }}
+                >
                   {key}
                 </option>
               ))}

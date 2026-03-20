@@ -44,17 +44,22 @@
         pad.axes[axisConfig[0]] = isPressed ? axisConfig[1] : 0;
       }
       if (DPAD_BUTTON_MAP[data.button] !== undefined) {
-        pad.buttons[DPAD_BUTTON_MAP[data.button]] = createButtonState(isPressed);
+        pad.buttons[DPAD_BUTTON_MAP[data.button]] =
+          createButtonState(isPressed);
       }
       if (!pad.connected) {
         pad.connected = true;
         if (!announced[playerIndex] && typeof GamepadEvent === "function") {
           announced[playerIndex] = true;
-          window.dispatchEvent(new GamepadEvent("gamepadconnected", { gamepad: pad }));
+          window.dispatchEvent(
+            new GamepadEvent("gamepadconnected", { gamepad: pad }),
+          );
         }
       }
     });
-    navigator.getGamepads = function () { return pads; };
+    navigator.getGamepads = function () {
+      return pads;
+    };
   }
 
   window.NEOARCADE_NEO_GEO = {
@@ -63,7 +68,8 @@
       var overlay = document.getElementById(config.loadingOverlayId);
       var statusNode = document.getElementById(config.loadingStatusId);
       if (statusNode) {
-        statusNode.textContent = "CARGANDO " + (config.gameTitle || "JUEGO").toUpperCase() + "...";
+        statusNode.textContent =
+          "CARGANDO " + (config.gameTitle || "JUEGO").toUpperCase() + "...";
       }
       window.EJS_player = config.playerSelector;
       window.EJS_core = "arcade";
@@ -73,11 +79,16 @@
       window.EJS_dontExtractRom = true;
       window.EJS_pathtodata = "/emulatorjs/data/";
       window.EJS_startOnLoaded = true;
-      window.EJS_language = "en";
+      window.EJS_disableAutoLang = false;
       window.EJS_onGameStart = function () {
         if (overlay) overlay.classList.add("hidden");
         if (typeof config.onGameStart === "function") config.onGameStart();
       };
+      var retryBtn = document.getElementById("retry-button");
+      if (retryBtn)
+        retryBtn.onclick = function () {
+          location.reload();
+        };
       var script = document.createElement("script");
       script.src = "/emulatorjs/data/loader.js";
       script.async = true;
