@@ -2,56 +2,12 @@
 # NEOARCADE — Multi-stage Dockerfile
 #
 # Stages:
-#   sf-builder   → Compiles Street Fighter (Pygame) to WebAssembly via Pygbag
-#   slug-builder → Copies Unity WebGL build (pre-built, see scripts/build-slug.sh)
 #   deps         → Installs Node.js dependencies
 #   builder      → Builds Next.js app
 #   runner       → Lean production image
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Stage 1: Build Street Fighter with Pygbag ─────────────────────────────────
-FROM python:3.12-slim AS sf-builder
-
-WORKDIR /game
-
-# System libs required for pygame headless (SDL2 in headless mode for Pygbag)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libsdl2-dev \
-    libsdl2-image-dev \
-    libsdl2-mixer-dev \
-    libsdl2-ttf-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python deps (numpy needed by main.py, pygame + pygbag for build)
-RUN pip install --no-cache-dir \
-    pygame==2.6.1 \
-    numpy==1.26.4 \
-    pygbag==0.9.2
-
-# Copy game source
-COPY games-src/sf/ .
-
-# Build: Pygbag packages main.py + assets → build/web/index.html + .apk + wasm
-# SDL_VIDEODRIVER=dummy: headless build (no display needed for --build)
-RUN SDL_VIDEODRIVER=dummy python -m pygbag \
-    --build \
-    --width 1280 \
-    --height 720 \
-    --ume_block 0 \
-    .
-
-# Inject NEOARCADE joystick bridge into the built HTML
-COPY scripts/inject-bridge.py /inject-bridge.py
-RUN python /inject-bridge.py build/web/index.html
-
-# ── Stage 2: Metal Slug WebGL (Unity pre-built) ───────────────────────────────
-# The Unity WebGL build is generated separately (see scripts/build-slug.sh).
-# If public/games/slug/ contains a WebGL build it will be included.
-# Otherwise the existing Phaser.js html5-slug fallback is used.
-FROM scratch AS slug-builder
-# This stage intentionally left minimal — assets come from the COPY below.
-
-# ── Stage 3: Node.js dependencies ─────────────────────────────────────────────
+# ── Stage 1: Node.js dependencies ────────────────────────────────────────────
 FROM node:20-alpine AS deps
 
 WORKDIR /app
@@ -114,10 +70,7 @@ COPY tsconfig.json ./
 
 # ── Copy game assets ──────────────────────────────────────────────────────────
 
-# Street Fighter: Pygbag WebAssembly build
-COPY --from=sf-builder /game/build/web/ ./public/games/sf/
-
-# Metal Slug: comes from public/games/slug/ (html5-slug Phaser.js, or Unity WebGL if built)
+# Metal Slug: comes from public/games/slug/ (EmulatorJS + ROM picker)
 # (already included via COPY public above)
 
 EXPOSE 3000

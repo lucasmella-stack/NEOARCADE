@@ -21,22 +21,13 @@ interface ArcadeGame {
 const ARCADE_GAMES: ArcadeGame[] = [
   {
     id: "slug",
-    name: "METAL SLUG (Unity Clone)",
-    description: "Tres niveles del clásico clonado en Unity. Dispara y avanza.",
+    name: "METAL SLUG (NeoGeo)",
+    description:
+      "Carga tu ROM de Metal Slug. Emulado con FinalBurn Neo. 1-2P co-op.",
     src: "/games/slug/index.html",
-    players: "1P",
+    players: "1-2P",
     color: "#ff9900",
     icon: "🔫",
-  },
-  {
-    id: "sf",
-    name: "STREET FIGHTER (Python/Pygbag)",
-    description:
-      "Warrior vs Wizard. Puñetazos, espada y magia en este clon de Pygame.",
-    src: "/games/sf/index.html",
-    players: "2P (VS CPU)",
-    color: "#ff4422",
-    icon: "🥊",
   },
   {
     id: "mario",

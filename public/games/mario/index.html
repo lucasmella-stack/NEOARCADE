@@ -37,6 +37,21 @@
     </style>
   </head>
   <body>
+    <script>
+      // Patch Audio.play() to silently catch autoplay rejections in iframe
+      (function () {
+        var origPlay = HTMLAudioElement.prototype.play;
+        HTMLAudioElement.prototype.play = function () {
+          try {
+            var p = origPlay.call(this);
+            if (p && p.catch) p.catch(function () {});
+            return p;
+          } catch (e) {
+            return Promise.resolve();
+          }
+        };
+      })();
+    </script>
     <script src="js/util.js"></script>
     <script src="js/input.js"></script>
     <script src="js/resources.js"></script>
