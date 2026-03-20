@@ -11,8 +11,23 @@ __pycache__/
 .pytest_cache/
 # ROMs — nunca se commitean
 public/roms/
+Juegos/
 *.rom
-*.zip
+# Excepciones: ROMs bundleadas en public/ sí se trackean
+!public/games/slug/mslug.zip
+# Unity activation files
+*.alf
+*.ulf
+# NeoGeo ROM part extensions
+*.c1
+*.c2
+*.c3
+*.c4
+*.m1
+*.p1
+*.s1
+*.v1
+*.v2
 pnpm-lock.yaml
 .mypy_cache/
 .ruff_cache/
