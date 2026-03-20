@@ -41,3 +41,5 @@ coverage/
 Thumbs.db
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+unity-activation-file.zip
