@@ -98,9 +98,9 @@ jobs:
       - name: Build Unity project
         uses: game-ci/unity-builder@v4
         env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_LICENSE_TYPE: Personal
         with:
           unityVersion: ${{ inputs.unity_version || '2018.3.8f1' }}
           projectPath: MetalSlugClone
