@@ -564,9 +564,9 @@ const padStyles = `
     align-items: center;
     justify-content: space-between;
     width: 92%;
-    max-width: 680px;
-    height: 72%;
-    max-height: 280px;
+    max-width: 720px;
+    height: 78%;
+    max-height: 320px;
     background: linear-gradient(170deg, ${C.bodyLight}, ${C.body});
     border: 3px solid ${C.bodyDark};
     border-radius: 28px;
@@ -580,9 +580,9 @@ const padStyles = `
   /* Fullscreen: expand */
   .pad-body-fs {
     width: 96%;
-    max-width: 800px;
-    height: 85%;
-    max-height: 360px;
+    max-width: 860px;
+    height: 88%;
+    max-height: 400px;
   }
 
   /* ── Left section (D-Pad) ── */
@@ -596,8 +596,8 @@ const padStyles = `
   /* ── D-Pad ── */
   .dpad {
     position: relative;
-    width: clamp(140px, 44vmin, 210px);
-    height: clamp(140px, 44vmin, 210px);
+    width: clamp(160px, 50vmin, 240px);
+    height: clamp(160px, 50vmin, 240px);
   }
 
   /* Cross bars — 3D effect */
@@ -773,8 +773,8 @@ const padStyles = `
 
   /* Action buttons — chunky 3D circles */
   .action-btn {
-    width: clamp(58px, 17vmin, 88px);
-    height: clamp(58px, 17vmin, 88px);
+    width: clamp(68px, 20vmin, 100px);
+    height: clamp(68px, 20vmin, 100px);
     border-radius: 50%;
     display: flex;
     align-items: center;
