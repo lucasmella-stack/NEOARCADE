@@ -83,6 +83,78 @@
         letter-spacing: 3px;
         text-shadow: 0 0 10px #00d4ff;
       }
+      .panel {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 10, 15, 0.92);
+        z-index: 60;
+        padding: 1.25rem;
+      }
+      .panel.hidden {
+        display: none;
+      }
+      .card {
+        width: min(520px, 100%);
+        padding: 1.25rem;
+        border: 1px solid #00d4ff55;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #111827, #090b12);
+        box-shadow: 0 0 30px #00d4ff22;
+      }
+      .card h2 {
+        margin-bottom: 0.75rem;
+        color: #00d4ff;
+        letter-spacing: 2px;
+        font-size: 1rem;
+      }
+      .card p {
+        color: #c3d4de;
+        line-height: 1.55;
+        font-size: 0.92rem;
+      }
+      .card code {
+        color: #58fafd;
+      }
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+      .primary-btn,
+      .secondary-btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 0.8rem 1rem;
+        font: inherit;
+        letter-spacing: 1px;
+        cursor: pointer;
+      }
+      .primary-btn {
+        background: linear-gradient(180deg, #00d4ff, #0080ff);
+        color: #051019;
+        font-weight: 700;
+      }
+      .primary-btn:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .secondary-btn {
+        background: transparent;
+        color: #e5eef2;
+        border: 1px solid #7b8b95;
+      }
+      .list {
+        margin-top: 0.85rem;
+        padding-left: 1.2rem;
+        color: #9fb6c1;
+      }
+      .list li + li {
+        margin-top: 0.45rem;
+      }
     </style>
   </head>
   <body>
@@ -92,79 +164,63 @@
     </div>
     <div id="loading-overlay">
       <div class="spin"></div>
-      <p>CARGANDO METAL SLUG...</p>
+      <p id="loading-status">PREPARANDO METAL SLUG...</p>
     </div>
+    <div id="bios-panel" class="panel hidden">
+      <div class="card">
+        <h2>BIOS NEO GEO NECESARIO</h2>
+        <p>
+          Metal Slug necesita el archivo <code>neogeo.zip</code>. Para evitar
+          depender del servidor, cárgalo una vez y lo guardaremos solo en este
+          navegador.
+        </p>
+        <ul class="list">
+          <li>Archivo requerido: <code>neogeo.zip</code></li>
+          <li>No se sube al servidor, queda local en tu navegador</li>
+          <li>
+            Después de cargarlo, este juego y Super Sidekicks usarán el mismo
+            BIOS
+          </li>
+        </ul>
+        <div class="actions">
+          <button id="bios-button" class="primary-btn">
+            USAR BIOS NEO GEO
+          </button>
+          <button class="secondary-btn" onclick="history.back()">VOLVER</button>
+        </div>
+        <input id="bios-input" type="file" accept=".zip" hidden />
+      </div>
+    </div>
+    <div id="error-panel" class="panel hidden">
+      <div class="card">
+        <h2>NO SE PUDO INICIAR</h2>
+        <p id="error-text">
+          El emulador no pudo arrancar este juego con la configuración actual.
+        </p>
+        <div class="actions">
+          <button id="retry-button" class="primary-btn">REINTENTAR</button>
+          <button class="secondary-btn" onclick="history.back()">VOLVER</button>
+        </div>
+      </div>
+    </div>
+    <script src="/games/neogeo-launcher.js"></script>
     <script>
-      /* NEOARCADE gamepad bridge */
-      (function () {
-        var BTN = { a: 1, b: 0, x: 2, y: 3, select: 8, start: 9 };
-        var AXIS = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
-        var DPAD_BTN = { up: 12, down: 13, left: 14, right: 15 };
-        function mkBtn(p) {
-          return { pressed: !!p, touched: !!p, value: p ? 1 : 0 };
-        }
-        function mkPad(i) {
-          return {
-            id: "NEOARCADE-P" + (i + 1),
-            index: i,
-            connected: false,
-            timestamp: 0,
-            mapping: "standard",
-            axes: new Float64Array(4),
-            buttons: Array.from({ length: 17 }, function () {
-              return mkBtn(false);
-            }),
-          };
-        }
-        var pads = [mkPad(0), mkPad(1)];
-        var announced = [false, false];
-        window.addEventListener("message", function (e) {
-          var d = e.data;
-          if (!d || (d.type !== "input" && d.type !== "neoarcade-input"))
-            return;
-          var i = (d.player || 1) - 1;
-          if (i < 0 || i > 1) return;
-          var pad = pads[i];
-          pad.timestamp = performance.now();
-          var p = d.state === "pressed";
-          if (BTN[d.button] !== undefined)
-            pad.buttons[BTN[d.button]] = mkBtn(p);
-          if (AXIS[d.button]) {
-            pad.axes[AXIS[d.button][0]] = p ? AXIS[d.button][1] : 0;
-          }
-          if (DPAD_BTN[d.button] !== undefined)
-            pad.buttons[DPAD_BTN[d.button]] = mkBtn(p);
-          if (!pad.connected) {
-            pad.connected = true;
-            if (!announced[i]) {
-              announced[i] = true;
-              window.dispatchEvent(
-                new GamepadEvent("gamepadconnected", { gamepad: pad }),
-              );
-            }
-          }
-        });
-        navigator.getGamepads = function () {
-          return pads;
-        };
-        console.log("[NEOARCADE] Gamepad bridge ready");
-      })();
-
-      /* Auto-launch */
-      window.EJS_player = "#game-container";
-      window.EJS_core = "fbneo";
-      window.EJS_gameUrl = "mslug.zip";
-      window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
-      window.EJS_biosUrl = "/games/bios/neogeo.zip";
-      window.EJS_startOnLoaded = true;
-      window.EJS_language = "en";
-      window.EJS_dontExtractRom = true;
-      window.EJS_onGameStart = function () {
-        document.getElementById("loading-overlay").classList.add("hidden");
-      };
-      var s = document.createElement("script");
-      s.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
-      document.body.appendChild(s);
+      window.NEOARCADE_NEO_GEO.bootstrap({
+        gameTitle: "Metal Slug",
+        romUrl: "mslug.zip",
+        playerSelector: "#game-container",
+        loadingText: "PREPARANDO METAL SLUG...",
+        loadingOverlayId: "loading-overlay",
+        loadingStatusId: "loading-status",
+        biosPanelId: "bios-panel",
+        biosInputId: "bios-input",
+        biosButtonId: "bios-button",
+        errorPanelId: "error-panel",
+        errorTextId: "error-text",
+        retryButtonId: "retry-button",
+        buttonLabel: "USAR BIOS NEO GEO",
+        serverBiosUrl: "/games/bios/neogeo.zip",
+      });
     </script>
   </body>
 </html>

@@ -35,3 +35,6 @@ Thumbs.db
 README*.md
 AGENTS.md
 *.zip
+!public/games/slug/mslug.zip
+!public/games/sidekicks/ssideki.zip
+!public/games/bios/*.zip
