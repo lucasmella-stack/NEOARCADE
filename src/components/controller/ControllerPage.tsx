@@ -3,11 +3,11 @@
 import { ControlButton } from "@/components/controller/ControlButton";
 import { DpadController } from "@/components/controller/DpadController";
 import { C, padStyles } from "@/components/controller/controllerStyles";
+import { useGamepad } from "@/hooks/useGamepad";
 import { t } from "@/lib/i18n";
 import { getSocket } from "@/lib/socket";
 import { useGameStore } from "@/store/game.store";
 import { useLangStore } from "@/store/lang.store";
-import type { Button } from "@/types/gamepad";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -107,17 +107,7 @@ export function ControllerPage() {
     };
   }, [searchParams, setRoomId, setConnected, setPlayerNumber]);
 
-  const press = useCallback((button: Button) => {
-    const socket = getSocket();
-    if (socket.connected)
-      socket.emit("input", { type: "input", button, state: "pressed" });
-  }, []);
-
-  const release = useCallback((button: Button) => {
-    const socket = getSocket();
-    if (socket.connected)
-      socket.emit("input", { type: "input", button, state: "released" });
-  }, []);
+  const { press, release } = useGamepad();
 
   const handleFullscreen = useCallback(() => {
     const el = document.documentElement;

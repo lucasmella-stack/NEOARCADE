@@ -1,11 +1,12 @@
 "use client";
 
 import { ARCADE_GAMES, type ArcadeGame } from "@/data/games";
+import type { Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 
 interface Props {
   onPlay: (game: ArcadeGame) => void;
-  lang: "es" | "en";
+  lang: Lang;
 }
 
 export function GameMenu({ onPlay, lang }: Props) {

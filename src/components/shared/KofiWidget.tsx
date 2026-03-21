@@ -68,7 +68,7 @@ export function KofiWidget() {
       }}
     >
       <span aria-hidden="true">☕</span>
-      <span className="hidden sm:inline">Regalame un cafe</span>
+      <span className="hidden sm:inline">{KOFI_TEXT[lang]}</span>
     </a>
   );
 }

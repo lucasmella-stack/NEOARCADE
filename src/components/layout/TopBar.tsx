@@ -1,24 +1,18 @@
 "use client";
 
+import { NEON_BTN } from "@/components/layout/layoutStyles";
 import { KofiWidget } from "@/components/shared/KofiWidget";
+import type { Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 import Image from "next/image";
 
 interface Props {
-  lang: "es" | "en";
+  lang: Lang;
   onToggleLang: () => void;
   showPanel: boolean;
   onTogglePanel: () => void;
   onOpenInstructions: () => void;
 }
-
-const NEON_BTN: React.CSSProperties = {
-  background: "linear-gradient(180deg, #0a1a5c, #011246)",
-  color: "#58FAFD",
-  border: "2px solid #024DD6",
-  boxShadow: "0 2px 0 #010224",
-  fontFamily: '"Courier New", monospace',
-};
 
 export function TopBar({
   lang,

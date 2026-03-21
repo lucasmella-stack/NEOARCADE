@@ -1,20 +1,14 @@
 "use client";
 
+import { NEON_BTN } from "@/components/layout/layoutStyles";
+import type { Lang } from "@/lib/i18n";
 import { t } from "@/lib/i18n";
 
 interface Props {
   show: boolean;
   onClose: () => void;
-  lang: "es" | "en";
+  lang: Lang;
 }
-
-const CLOSE_BTN: React.CSSProperties = {
-  color: "#58FAFD",
-  background: "linear-gradient(180deg, #0a1a5c, #011246)",
-  border: "2px solid #024DD6",
-  boxShadow: "0 2px 0 #010224",
-  fontFamily: '"Courier New", monospace',
-};
 
 export function InstructionsModal({ show, onClose, lang }: Props) {
   if (!show) return null;
@@ -48,7 +42,7 @@ export function InstructionsModal({ show, onClose, lang }: Props) {
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer"
-            style={CLOSE_BTN}
+            style={NEON_BTN}
           >
             ✕
           </button>
