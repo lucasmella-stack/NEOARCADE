@@ -21,7 +21,11 @@
 
 ## Demo
 
-<video src="https://github.com/lucasmella-stack/NEOARCADE/raw/main/docs/demo.mp4" controls autoplay loop muted width="100%"></video>
+<p align="center">
+  <img src="docs/demo.gif" alt="NEOARCADE demo" width="480" />
+  <br/>
+  <a href="https://github.com/lucasmella-stack/NEOARCADE/raw/main/docs/demo.mp4">▶ Ver demo en MP4</a>
+</p>
 
 ---
 
