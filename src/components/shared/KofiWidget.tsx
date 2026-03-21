@@ -1,5 +1,6 @@
 "use client";
 
+import { useLangStore } from "@/store/lang.store";
 import { useEffect, useState } from "react";
 
 declare global {
@@ -11,13 +12,19 @@ declare global {
   }
 }
 
+const KOFI_TEXT = {
+  es: "Regalame un cafe",
+  en: "Buy me a coffee",
+} as const;
+
 export function KofiWidget() {
+  const { lang } = useLangStore();
   const [html, setHtml] = useState<string | null>(null);
 
   useEffect(() => {
     const initWidget = () => {
       if (!window.kofiwidget2) return;
-      window.kofiwidget2.init("Regalame un cafe", "#141213", "A0A71WAQS6");
+      window.kofiwidget2.init(KOFI_TEXT[lang], "#141213", "A0A71WAQS6");
       setHtml(window.kofiwidget2.getHTML());
     };
 
@@ -31,7 +38,7 @@ export function KofiWidget() {
     script.async = true;
     script.onload = initWidget;
     document.head.appendChild(script);
-  }, []);
+  }, [lang]);
 
   if (html) {
     return (
