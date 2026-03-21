@@ -190,6 +190,7 @@ export function GameScreen() {
             src={mode.game.src}
             title={mode.game.name}
             className="w-full h-full border-0"
+            allow="autoplay"
             sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-popups allow-forms"
           />
         )}
