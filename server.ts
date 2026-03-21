@@ -10,6 +10,10 @@ const port = parseInt(process.env.PORT ?? "3000", 10);
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+// Restrict Socket.io CORS to known safe origins
+const ALLOWED_ORIGIN =
+  process.env.NEXT_PUBLIC_SOCKET_URL?.replace(/\/$/, "") ?? "";
+
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
     const parsedUrl = parse(req.url!, true);
@@ -18,7 +22,17 @@ app.prepare().then(() => {
 
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "*",
+      origin: (origin, cb) => {
+        if (!origin) {
+          cb(null, true);
+          return;
+        } // server-to-server / curl
+        const ok =
+          /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+          /^https:\/\/[-a-z0-9]+\.ngrok-free\.(app|dev)$/.test(origin) ||
+          (ALLOWED_ORIGIN !== "" && origin === ALLOWED_ORIGIN);
+        cb(ok ? null : new Error("CORS: origin not allowed"), ok);
+      },
       methods: ["GET", "POST"],
     },
   });

@@ -25,7 +25,9 @@ const NGROK_AUTH_TOKEN = process.env.NGROK_AUTHTOKEN ?? "";
 if (NGROK_AUTH_TOKEN) {
   const { execSync } = await import("child_process");
   try {
-    execSync(`"${NGROK_PATH}" config add-authtoken ${NGROK_AUTH_TOKEN}`, { stdio: "ignore" });
+    execSync(`"${NGROK_PATH}" config add-authtoken ${NGROK_AUTH_TOKEN}`, {
+      stdio: "ignore",
+    });
     console.log("✅ Auth token configurado");
   } catch {
     console.warn("⚠ No se pudo configurar el auth token de ngrok");
@@ -82,7 +84,9 @@ const pollApi = async () => {
   }
   if (!url) {
     console.error("❌ No se pudo detectar la URL de ngrok.");
-    console.log("\n👉 Copia la URL de ngrok manualmente y ponla en .env.local:");
+    console.log(
+      "\n👉 Copia la URL de ngrok manualmente y ponla en .env.local:",
+    );
     console.log("   NEXT_PUBLIC_SOCKET_URL=https://xxxx.ngrok-free.app");
   }
 };
@@ -92,14 +96,16 @@ pollApi();
 function onTunnelReady(publicUrl) {
   console.log(`\n✅ Túnel activo: ${publicUrl}`);
   console.log(`\n📱 Abre esto en tu móvil:\n   ${publicUrl}`);
-  console.log(`\n🎮 QR del controller apuntará a:\n   ${publicUrl}/controller?room=<id>`);
+  console.log(
+    `\n🎮 QR del controller apuntará a:\n   ${publicUrl}/controller?room=<id>`,
+  );
 
   // Actualizar .env.local
   try {
     let env = readFileSync(envPath, "utf-8");
     env = env.replace(
       /^NEXT_PUBLIC_SOCKET_URL=.*/m,
-      `NEXT_PUBLIC_SOCKET_URL=${publicUrl}`
+      `NEXT_PUBLIC_SOCKET_URL=${publicUrl}`,
     );
     writeFileSync(envPath, env, "utf-8");
     console.log("\n📝 .env.local actualizado con la URL del túnel");
@@ -117,10 +123,12 @@ process.on("SIGINT", () => {
     let env = readFileSync(envPath, "utf-8");
     env = env.replace(
       /^NEXT_PUBLIC_SOCKET_URL=.*/m,
-      "NEXT_PUBLIC_SOCKET_URL=http://localhost:3000"
+      "NEXT_PUBLIC_SOCKET_URL=http://localhost:3000",
     );
     writeFileSync(envPath, env);
     console.log("\n🔄 .env.local restaurado a localhost");
-  } catch {}
+  } catch {
+    /* ignore — env file may not exist */
+  }
   process.exit(0);
 });

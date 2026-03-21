@@ -37,7 +37,6 @@ RUN pnpm exec esbuild server.ts \
       --external:next \
       --external:socket.io \
       --external:socket.io-client \
-      --external:uuid \
       --external:react \
       --external:react-dom
 
