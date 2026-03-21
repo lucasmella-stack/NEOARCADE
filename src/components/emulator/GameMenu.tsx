@@ -50,12 +50,6 @@ export function GameMenu({ onPlay, lang }: Props) {
                 {game.name}
               </span>
               <span
-                className="text-[10px] tracking-wide block mt-0.5 leading-tight"
-                style={{ color: "#888" }}
-              >
-                {game.description}
-              </span>
-              <span
                 className="absolute top-2 right-2 text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded"
                 style={{
                   color: game.color,
