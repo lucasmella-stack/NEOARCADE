@@ -1,11 +1,10 @@
 "use client";
 
 import { GameScreen } from "@/components/emulator/GameScreen";
-import { Lobby } from "@/components/lobby/Lobby";
-import { KofiWidget } from "@/components/shared/KofiWidget";
-import { t } from "@/lib/i18n";
+import { InstructionsModal } from "@/components/layout/InstructionsModal";
+import { QrPanel } from "@/components/layout/QrPanel";
+import { TopBar } from "@/components/layout/TopBar";
 import { useLangStore } from "@/store/lang.store";
-import Image from "next/image";
 import { useState } from "react";
 
 export default function GamePage() {
@@ -18,115 +17,15 @@ export default function GamePage() {
       className="relative w-screen h-screen overflow-hidden flex flex-col"
       style={{ backgroundColor: "#010224" }}
     >
-      {/* ── TopBar — 3D retro style ── */}
-      <header
-        className="relative z-20 flex items-center gap-3 px-4 shrink-0"
-        style={{
-          height: 52,
-          background: "linear-gradient(180deg, #0a1a5c 0%, #011246 100%)",
-          borderBottom: "3px solid #024DD6",
-          boxShadow:
-            "0 4px 0 #010224, 0 6px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(88,250,253,0.1)",
-        }}
-      >
-        {/* Logo */}
-        <Image
-          src="/logo.webp"
-          alt="NEOARCADE"
-          width={32}
-          height={32}
-          className="shrink-0"
-        />
-        <span
-          className="text-sm font-bold tracking-[0.25em] uppercase select-none hidden sm:block"
-          style={{
-            color: "#58FAFD",
-            textShadow: "0 0 10px #20E9FB, 0 2px 0 #024DD6",
-            fontFamily: '"Courier New", monospace',
-          }}
-        >
-          NEOARCADE
-        </span>
+      <TopBar
+        lang={lang}
+        onToggleLang={() => setLang(lang === "es" ? "en" : "es")}
+        showPanel={showPanel}
+        onTogglePanel={() => setShowPanel((v) => !v)}
+        onOpenInstructions={() => setShowInstructions(true)}
+      />
 
-        {/* Game controls portal target */}
-        <div id="topbar-controls" className="flex items-center gap-2" />
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Lang toggle */}
-        <button
-          onClick={() => setLang(lang === "es" ? "en" : "es")}
-          className="h-9 px-3 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all hover:brightness-125 active:scale-95 shrink-0"
-          style={{
-            background: "linear-gradient(180deg, #0a1a5c, #011246)",
-            color: "#58FAFD",
-            border: "2px solid #024DD6",
-            boxShadow: "0 2px 0 #010224",
-            fontFamily: '"Courier New", monospace',
-          }}
-        >
-          {lang === "es" ? "EN" : "ES"}
-        </button>
-
-        {/* Ko-fi Widget */}
-        <KofiWidget />
-
-        {/* Instrucciones */}
-        <button
-          onClick={() => setShowInstructions(true)}
-          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2 hover:brightness-125 active:scale-95 hidden sm:flex"
-          style={{
-            background: "linear-gradient(180deg, #0a1a5c, #011246)",
-            color: "#58FAFD",
-            border: "2px solid #024DD6",
-            boxShadow: "0 2px 0 #010224",
-            fontFamily: '"Courier New", monospace',
-            textShadow: "0 0 6px #20E9FB80",
-          }}
-        >
-          {t[lang].instructions}
-        </button>
-
-        {/* Botón abrir QR panel — gamepad icon */}
-        <button
-          onClick={() => setShowPanel(!showPanel)}
-          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2"
-          style={{
-            background: showPanel
-              ? "linear-gradient(180deg, #024DD6, #011246)"
-              : "linear-gradient(180deg, #0a1a5c, #011246)",
-            color: "#58FAFD",
-            border: "2px solid #024DD6",
-            boxShadow: showPanel
-              ? "0 0 14px rgba(88,250,253,0.4), 0 3px 0 #010224, inset 0 1px 0 rgba(88,250,253,0.15)"
-              : "0 3px 0 #010224, inset 0 1px 0 rgba(88,250,253,0.1)",
-            fontFamily: '"Courier New", monospace',
-            textShadow: "0 0 6px #20E9FB80",
-          }}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2 6m0 2a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2z" />
-            <path d="M6 12h4m-2 -2v4" />
-            <path d="M15 11l0 .01" />
-            <path d="M18 13l0 .01" />
-          </svg>
-          JOYSTICK
-        </button>
-      </header>
-
-      {/* ── Game area (takes all remaining space) ── */}
       <div className="relative flex-1 min-h-0">
-        {/* Background gradient */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -134,122 +33,21 @@ export default function GamePage() {
               "radial-gradient(ellipse 80% 60% at 50% 40%, #001a2e 0%, #010224 100%)",
           }}
         />
-
-        {/* GameScreen fills available space */}
         <div className="relative z-10 w-full h-full p-3">
           <GameScreen />
         </div>
-
-        {/* ── Slide-out QR Panel (right side) ── */}
-        <div
-          className="absolute top-0 right-0 h-full z-30 transition-transform duration-300 ease-in-out"
-          style={{
-            width: 320,
-            transform: showPanel ? "translateX(0)" : "translateX(100%)",
-          }}
-        >
-          {/* Backdrop */}
-          {showPanel && (
-            <div
-              className="fixed inset-0 z-[-1]"
-              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-              onClick={() => setShowPanel(false)}
-            />
-          )}
-          {/* Panel content */}
-          <div
-            className="h-full overflow-y-auto p-4"
-            style={{
-              background: "linear-gradient(180deg, #0a1a5c, #011246)",
-              borderLeft: "3px solid #024DD6",
-              boxShadow:
-                "-4px 0 30px rgba(0,0,0,0.6), inset 1px 0 0 rgba(88,250,253,0.08)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span
-                className="text-xs font-bold tracking-widest uppercase"
-                style={{
-                  color: "#58FAFD",
-                  fontFamily: '"Courier New", monospace',
-                  textShadow: "0 0 8px #20E9FB80",
-                }}
-              >
-                {t[lang].connect}
-              </span>
-              <button
-                onClick={() => setShowPanel(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer"
-                style={{
-                  color: "#58FAFD",
-                  background: "linear-gradient(180deg, #0a1a5c, #011246)",
-                  border: "2px solid #024DD6",
-                  boxShadow: "0 2px 0 #010224",
-                  fontFamily: '"Courier New", monospace',
-                }}
-              >
-                ✕
-              </button>
-            </div>
-            <Lobby />
-          </div>
-        </div>
+        <QrPanel
+          show={showPanel}
+          onClose={() => setShowPanel(false)}
+          lang={lang}
+        />
       </div>
 
-      {/* ── Instructions Modal ── */}
-      {showInstructions && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
-          onClick={() => setShowInstructions(false)}
-        >
-          <div
-            className="relative rounded-xl p-8 max-w-md w-[90vw] flex flex-col gap-4"
-            style={{
-              background: "linear-gradient(180deg, #0a1a5c 0%, #011246 100%)",
-              border: "2px solid #024DD6",
-              boxShadow:
-                "0 0 40px rgba(0,212,255,0.2), 0 8px 32px rgba(0,0,0,0.6)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className="text-sm font-bold tracking-widest uppercase"
-                style={{
-                  color: "#58FAFD",
-                  fontFamily: '"Courier New", monospace',
-                  textShadow: "0 0 10px #20E9FB",
-                }}
-              >
-                {t[lang].instructionsTitle}
-              </span>
-              <button
-                onClick={() => setShowInstructions(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer"
-                style={{
-                  color: "#58FAFD",
-                  background: "linear-gradient(180deg, #0a1a5c, #011246)",
-                  border: "2px solid #024DD6",
-                  boxShadow: "0 2px 0 #010224",
-                  fontFamily: '"Courier New", monospace',
-                }}
-              >
-                ✕
-              </button>
-            </div>
-            <p
-              className="text-sm leading-relaxed text-center"
-              style={{
-                color: "#a8cbde",
-                fontFamily: '"Courier New", monospace',
-              }}
-            >
-              {t[lang].instructionsContent}
-            </p>
-          </div>
-        </div>
-      )}
+      <InstructionsModal
+        show={showInstructions}
+        onClose={() => setShowInstructions(false)}
+        lang={lang}
+      />
     </main>
   );
 }
