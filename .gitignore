@@ -6,12 +6,11 @@ out/
 .env
 .env.local
 .env.*.local
-# SSL Certificates (never commit)
-certs/*.pem
-certs/*.key
-certs/*.crt
+# SSL Certificates (never commit) — exclude entire folder
+certs/
 # Docker deploy artifacts
 neoarcade.tar.gz
+source.tar.gz
 __pycache__/
 *.pyc
 .pytest_cache/

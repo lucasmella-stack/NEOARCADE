@@ -14,14 +14,11 @@ services:
       - traefik-network
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-network"
       - "traefik.http.routers.neoarcade.rule=Host(`arcadeneo.com`) || Host(`www.arcadeneo.com`)"
       - "traefik.http.routers.neoarcade.entrypoints=websecure"
       - "traefik.http.routers.neoarcade.tls=true"
       - "traefik.http.services.neoarcade.loadbalancer.server.port=3000"
-      - "traefik.http.routers.neoarcade-http.rule=Host(`arcadeneo.com`) || Host(`www.arcadeneo.com`)"
-      - "traefik.http.routers.neoarcade-http.entrypoints=web"
-      - "traefik.http.routers.neoarcade-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "--spider", "http://localhost:3000"]
       interval: 30s

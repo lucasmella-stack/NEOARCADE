@@ -40,6 +40,7 @@ INSTRUCCIONES-INSTRUCTIONS/
 certs/
 nginx/
 neoarcade.tar.gz
+source.tar.gz
 !public/games/slug/mslug.zip
 !public/games/sidekicks/ssideki.zip
 !public/games/bios/*.zip

@@ -27,6 +27,12 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build-time env vars for NEXT_PUBLIC_ (baked into client bundle)
+ARG NEXT_PUBLIC_SOCKET_URL=https://arcadeneo.com
+ARG NEXT_PUBLIC_SPONSOR_URL=https://ko-fi.com/lucasmella
+ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
+ENV NEXT_PUBLIC_SPONSOR_URL=$NEXT_PUBLIC_SPONSOR_URL
+
 # Compile server.ts → server.cjs so "node server.cjs" works at runtime
 RUN pnpm exec esbuild server.ts \
       --bundle \

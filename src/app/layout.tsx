@@ -12,6 +12,28 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "NEOARCADE",
   },
+  openGraph: {
+    title: "NEOARCADE",
+    description: "Consola retro open source. Juega con tu móvil como joystick.",
+    url: "https://arcadeneo.com",
+    siteName: "NEOARCADE",
+    images: [
+      {
+        url: "https://arcadeneo.com/logo.png",
+        width: 512,
+        height: 512,
+        alt: "NEOARCADE logo",
+      },
+    ],
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "NEOARCADE",
+    description: "Consola retro open source. Juega con tu móvil como joystick.",
+    images: ["https://arcadeneo.com/logo.png"],
+  },
 };
 
 export const viewport: Viewport = {

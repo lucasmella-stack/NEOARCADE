@@ -44,10 +44,23 @@ export function DpadController({ onPress, onRelease }: Props) {
       const y = (touch.clientY - rect.top) / rect.height - 0.5;
       const deadzone = 0.08;
       const dirs = new Set<string>();
-      if (y < -deadzone) dirs.add("up");
-      if (y > deadzone) dirs.add("down");
-      if (x < -deadzone) dirs.add("left");
-      if (x > deadzone) dirs.add("right");
+
+      // In portrait mode the CSS applies rotate(90deg) to .pad-root, which
+      // rotates the layout 90° CW visually, but getBoundingClientRect() returns
+      // coords in screen (unrotated) space. We must invert the rotation so that
+      // touching the visual "up" arrow actually maps to logical "up".
+      // Inverse of rotate(90°CW): logical_dx = screen_dy, logical_dy = -screen_dx
+      if (window.matchMedia("(orientation: portrait)").matches) {
+        if (x > deadzone) dirs.add("up"); // screen right  → logical up
+        if (x < -deadzone) dirs.add("down"); // screen left   → logical down
+        if (y < -deadzone) dirs.add("left"); // screen top    → logical left
+        if (y > deadzone) dirs.add("right"); // screen bottom → logical right
+      } else {
+        if (y < -deadzone) dirs.add("up");
+        if (y > deadzone) dirs.add("down");
+        if (x < -deadzone) dirs.add("left");
+        if (x > deadzone) dirs.add("right");
+      }
       return dirs;
     },
     [],
