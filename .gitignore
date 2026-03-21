@@ -18,7 +18,6 @@ Juegos/
 !public/games/sidekicks/ssideki.zip
 # BIOS files — copyrighted, not distributed
 public/games/bios/*.zip
-!public/games/bios/.gitkeep
 # Unity activation files
 *.alf
 *.ulf
@@ -46,3 +45,6 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 
 unity-activation-file.zip
+
+# Source assets — raw captures, not for distribution
+INSTRUCCIONES-INSTRUCTIONS/

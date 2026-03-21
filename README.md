@@ -19,6 +19,12 @@
 
 ---
 
+## Demo
+
+<video src="https://github.com/lucasmella-stack/NEOARCADE/raw/main/docs/demo.mp4" controls autoplay loop muted width="100%"></video>
+
+---
+
 ## Qué es NEOARCADE
 
 Una consola de arcade que corre enteramente en el navegador. Abrís la web en tu PC/TV, escaneás el QR con el celular, y el celular se convierte en un gamepad virtual con D-pad + botones A/B + Start/Select. Dos personas pueden jugar al mismo tiempo.
