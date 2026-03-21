@@ -30,7 +30,10 @@ export const t = {
     expand: "⛶ AMPLIAR",
     // Instructions modal
     instructionsTitle: "INSTRUCCIONES",
-    instructionsContent: "Próximamente…",
+    instrAllGames: "TODOS LOS JUEGOS",
+    instrNeoGeo: "JUEGOS NEOGEO",
+    instrNeoStep1: "PASO 1 — CONFIGURACIÓN",
+    instrNeoStep2: "PASO 2 — CONFIGURACIÓN",
   },
   en: {
     // TopBar
@@ -60,6 +63,9 @@ export const t = {
     expand: "⛶ EXPAND",
     // Instructions modal
     instructionsTitle: "INSTRUCTIONS",
-    instructionsContent: "Coming soon…",
+    instrAllGames: "ALL GAMES",
+    instrNeoGeo: "NEOGEO GAMES",
+    instrNeoStep1: "STEP 1 — SETUP",
+    instrNeoStep2: "STEP 2 — SETUP",
   },
 } as const;
