@@ -6,6 +6,12 @@ out/
 .env
 .env.local
 .env.*.local
+# SSL Certificates (never commit)
+certs/*.pem
+certs/*.key
+certs/*.crt
+# Docker deploy artifacts
+neoarcade.tar.gz
 __pycache__/
 *.pyc
 .pytest_cache/

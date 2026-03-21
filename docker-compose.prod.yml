@@ -1,0 +1,34 @@
+services:
+  neoarcade:
+    image: neoarcade:latest
+    container_name: neoarcade
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_SOCKET_URL=https://arcadeneo.com
+      - NEXT_PUBLIC_SPONSOR_URL=https://ko-fi.com/lucasmella
+    restart: unless-stopped
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.neoarcade.rule=Host(`arcadeneo.com`) || Host(`www.arcadeneo.com`)"
+      - "traefik.http.routers.neoarcade.entrypoints=websecure"
+      - "traefik.http.routers.neoarcade.tls=true"
+      - "traefik.http.services.neoarcade.loadbalancer.server.port=3000"
+      - "traefik.http.routers.neoarcade-http.rule=Host(`arcadeneo.com`) || Host(`www.arcadeneo.com`)"
+      - "traefik.http.routers.neoarcade-http.entrypoints=web"
+      - "traefik.http.routers.neoarcade-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  traefik-network:
+    external: true
