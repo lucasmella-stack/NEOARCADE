@@ -1,11 +1,14 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useGameStore } from "@/store/game.store";
+import { useLangStore } from "@/store/lang.store";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 
 export function Lobby() {
   const { roomId, connectedPlayers, isConnected } = useGameStore();
+  const { lang } = useLangStore();
   const [controllerUrl, setControllerUrl] = useState("");
 
   useEffect(() => {
@@ -28,8 +31,10 @@ export function Lobby() {
       className="rounded-lg p-4 flex flex-col gap-4"
       style={{
         backgroundColor: "var(--bg-card)",
-        border: "1px solid color-mix(in srgb, var(--neon-primary) 20%, transparent)",
-        boxShadow: "0 0 20px color-mix(in srgb, var(--neon-primary) 8%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--neon-primary) 20%, transparent)",
+        boxShadow:
+          "0 0 20px color-mix(in srgb, var(--neon-primary) 8%, transparent)",
       }}
     >
       {/* Título */}
@@ -38,7 +43,7 @@ export function Lobby() {
           className="text-sm font-bold tracking-widest uppercase"
           style={{ color: "var(--neon-primary)" }}
         >
-          CONECTAR JOYSTICK
+          {t[lang].connectJoystick}
         </h2>
         {/* Indicador de conexión */}
         <div className="flex items-center gap-1.5">
@@ -55,7 +60,7 @@ export function Lobby() {
             className="text-xs tracking-wider"
             style={{ color: "var(--text-muted)" }}
           >
-            {isConnected ? "ON" : "OFF"}
+            {isConnected ? t[lang].connOn : t[lang].connOff}
           </span>
         </div>
       </div>
@@ -67,7 +72,8 @@ export function Lobby() {
             className="p-3 rounded-lg"
             style={{
               backgroundColor: "#fff",
-              boxShadow: "0 0 20px color-mix(in srgb, var(--neon-primary) 30%, transparent)",
+              boxShadow:
+                "0 0 20px color-mix(in srgb, var(--neon-primary) 30%, transparent)",
             }}
           >
             <QRCodeSVG
@@ -80,7 +86,7 @@ export function Lobby() {
           </div>
           <p
             className="text-xs text-center break-all leading-relaxed"
-            style={{ color: "var(--text-muted)" }}
+            style={{ color: "#a8cbde", fontWeight: 600 }}
           >
             {controllerUrl}
           </p>
@@ -91,7 +97,7 @@ export function Lobby() {
           style={{ backgroundColor: "var(--bg-surface)" }}
         >
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Cargando…
+            {t[lang].loading}
           </span>
         </div>
       )}
@@ -102,7 +108,7 @@ export function Lobby() {
           className="text-xs tracking-widest uppercase mb-1"
           style={{ color: "var(--text-muted)" }}
         >
-          Jugadores
+          {t[lang].players}
         </p>
         {players.map((p) => {
           const connected = connectedPlayers >= p;
@@ -125,7 +131,9 @@ export function Lobby() {
               <span
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: connected ? "var(--neon-primary)" : "var(--text-muted)",
+                  backgroundColor: connected
+                    ? "var(--neon-primary)"
+                    : "var(--text-muted)",
                   boxShadow: connected ? "0 0 8px var(--neon-primary)" : "none",
                   transition: "all 0.3s ease",
                 }}
@@ -133,7 +141,9 @@ export function Lobby() {
               <span
                 className="text-sm font-bold tracking-wider"
                 style={{
-                  color: connected ? "var(--neon-primary)" : "var(--text-muted)",
+                  color: connected
+                    ? "var(--neon-primary)"
+                    : "var(--text-muted)",
                   transition: "color 0.3s ease",
                 }}
               >
@@ -143,7 +153,7 @@ export function Lobby() {
                 className="ml-auto text-xs tracking-wider"
                 style={{ color: "var(--text-muted)" }}
               >
-                {connected ? "READY" : "WAITING"}
+                {connected ? t[lang].ready : t[lang].waiting}
               </span>
             </div>
           );
@@ -155,7 +165,7 @@ export function Lobby() {
         className="text-xs text-center leading-relaxed"
         style={{ color: "var(--text-muted)" }}
       >
-        Escanea el QR con tu móvil para conectarte como joystick
+        {t[lang].scanQr}
       </p>
     </div>
   );

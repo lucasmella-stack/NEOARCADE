@@ -2,13 +2,16 @@
 
 import { GameScreen } from "@/components/emulator/GameScreen";
 import { Lobby } from "@/components/lobby/Lobby";
+import { KofiWidget } from "@/components/shared/KofiWidget";
+import { t } from "@/lib/i18n";
+import { useLangStore } from "@/store/lang.store";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function GamePage() {
   const [showPanel, setShowPanel] = useState(false);
-  const sponsorUrl =
-    process.env.NEXT_PUBLIC_SPONSOR_URL ?? "https://ko-fi.com/lucasmella";
+  const [showInstructions, setShowInstructions] = useState(false);
+  const { lang, setLang } = useLangStore();
 
   return (
     <main
@@ -51,23 +54,39 @@ export default function GamePage() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        <a
-          href={sponsorUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="h-9 px-4 rounded-lg text-sm font-bold cursor-pointer transition-all flex items-center gap-2 hover:brightness-110 active:scale-95"
+        {/* Lang toggle */}
+        <button
+          onClick={() => setLang(lang === "es" ? "en" : "es")}
+          className="h-9 px-3 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all hover:brightness-125 active:scale-95 shrink-0"
           style={{
-            background: "#FF5E5B",
-            color: "#ffffff",
-            border: "none",
-            boxShadow: "0 2px 0 #c93c3a",
-            fontFamily: '"Segoe UI", sans-serif',
-            letterSpacing: "0.01em",
+            background: "linear-gradient(180deg, #0a1a5c, #011246)",
+            color: "#58FAFD",
+            border: "2px solid #024DD6",
+            boxShadow: "0 2px 0 #010224",
+            fontFamily: '"Courier New", monospace',
           }}
         >
-          <span aria-hidden="true">☕</span>
-          <span className="hidden sm:inline">Regálame un café</span>
-        </a>
+          {lang === "es" ? "EN" : "ES"}
+        </button>
+
+        {/* Ko-fi Widget */}
+        <KofiWidget />
+
+        {/* Instrucciones */}
+        <button
+          onClick={() => setShowInstructions(true)}
+          className="h-9 px-4 rounded-lg text-xs font-bold tracking-wider uppercase cursor-pointer transition-all flex items-center gap-2 hover:brightness-125 active:scale-95 hidden sm:flex"
+          style={{
+            background: "linear-gradient(180deg, #0a1a5c, #011246)",
+            color: "#58FAFD",
+            border: "2px solid #024DD6",
+            boxShadow: "0 2px 0 #010224",
+            fontFamily: '"Courier New", monospace',
+            textShadow: "0 0 6px #20E9FB80",
+          }}
+        >
+          {t[lang].instructions}
+        </button>
 
         {/* Botón abrir QR panel — gamepad icon */}
         <button
@@ -156,7 +175,7 @@ export default function GamePage() {
                   textShadow: "0 0 8px #20E9FB80",
                 }}
               >
-                CONECTAR
+                {t[lang].connect}
               </span>
               <button
                 onClick={() => setShowPanel(false)}
@@ -176,6 +195,61 @@ export default function GamePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Instructions Modal ── */}
+      {showInstructions && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
+          onClick={() => setShowInstructions(false)}
+        >
+          <div
+            className="relative rounded-xl p-8 max-w-md w-[90vw] flex flex-col gap-4"
+            style={{
+              background: "linear-gradient(180deg, #0a1a5c 0%, #011246 100%)",
+              border: "2px solid #024DD6",
+              boxShadow:
+                "0 0 40px rgba(0,212,255,0.2), 0 8px 32px rgba(0,0,0,0.6)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <span
+                className="text-sm font-bold tracking-widest uppercase"
+                style={{
+                  color: "#58FAFD",
+                  fontFamily: '"Courier New", monospace',
+                  textShadow: "0 0 10px #20E9FB",
+                }}
+              >
+                {t[lang].instructionsTitle}
+              </span>
+              <button
+                onClick={() => setShowInstructions(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer"
+                style={{
+                  color: "#58FAFD",
+                  background: "linear-gradient(180deg, #0a1a5c, #011246)",
+                  border: "2px solid #024DD6",
+                  boxShadow: "0 2px 0 #010224",
+                  fontFamily: '"Courier New", monospace',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <p
+              className="text-sm leading-relaxed text-center"
+              style={{
+                color: "#a8cbde",
+                fontFamily: '"Courier New", monospace',
+              }}
+            >
+              {t[lang].instructionsContent}
+            </p>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

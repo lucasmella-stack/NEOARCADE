@@ -1,7 +1,9 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { getSocket } from "@/lib/socket";
 import { useGameStore } from "@/store/game.store";
+import { useLangStore } from "@/store/lang.store";
 import type { Button } from "@/types/gamepad";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -206,6 +208,7 @@ export function ControllerPage() {
 
   const [orientationLocked, setOrientationLocked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { lang } = useLangStore();
 
   // Track fullscreen changes (webkit fallback for iOS Safari)
   useEffect(() => {
@@ -368,9 +371,7 @@ export function ControllerPage() {
         >
           NEOARCADE
         </p>
-        <p style={{ fontSize: 13, color: "#556" }}>
-          Escanea el QR desde la consola para conectarte
-        </p>
+        <p style={{ fontSize: 13, color: "#556" }}>{t[lang].noRoom}</p>
       </div>
     );
   }
@@ -387,7 +388,7 @@ export function ControllerPage() {
           }}
           onClick={handleFullscreen}
         >
-          ⛶ AMPLIAR
+          {t[lang].expand}
         </button>
       )}
 
@@ -472,7 +473,7 @@ export function ControllerPage() {
 
       {/* ── Connection status ── */}
       <div className="pad-status">
-        {isConnected ? "● CONECTADO" : "○ CONECTANDO…"}
+        {isConnected ? t[lang].connected : t[lang].connecting}
       </div>
 
       <style>{padStyles}</style>
@@ -857,10 +858,22 @@ const padStyles = `
   /* ── Portrait fallback ── */
   @media (orientation: portrait) {
     .pad-root {
-      transform: rotate(90deg);
-      transform-origin: center center;
+      /* Override inset:0 — manually center the rotated landscape layout */
+      inset: unset;
+      position: fixed;
       width: 100dvh;
       height: 100dvw;
+      top: calc((100dvh - 100dvw) / 2);
+      left: calc((100dvw - 100dvh) / 2);
+      transform: rotate(90deg);
+      transform-origin: center center;
+    }
+    /* Fullscreen button is position:fixed (viewport-relative).
+       In portrait viewport, bottom-right → top-right of the rotated landscape. */
+    .pad-fs-btn {
+      top: unset;
+      bottom: 12px;
+      right: 10px;
     }
   }
 `;

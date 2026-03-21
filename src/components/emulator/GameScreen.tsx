@@ -1,7 +1,9 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { getSocket } from "@/lib/socket";
 import { useGameStore } from "@/store/game.store";
+import { useLangStore } from "@/store/lang.store";
 import type { InputEvent, RoomUpdateEvent } from "@/types/gamepad";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -382,6 +384,7 @@ export function GameScreen() {
   const [mode, setMode] = useState<ScreenMode>({ type: "menu" });
   const [selectedCore, setSelectedCore] = useState<CoreKey>("NES");
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const { lang } = useLangStore();
 
   if (!audioEngineRef.current && typeof window !== "undefined") {
     audioEngineRef.current = createAudioEngine();
@@ -605,8 +608,7 @@ export function GameScreen() {
                 className="text-[10px] tracking-wide text-center mt-4 leading-relaxed"
                 style={{ color: "#6f7f8f" }}
               >
-                Algunos sistemas como Neo Geo pueden requerir BIOS del usuario
-                para el primer arranque.
+                {t[lang].neogeoNote}
               </p>
             </div>
           </div>
@@ -629,7 +631,7 @@ export function GameScreen() {
                   fontFamily: '"Courier New", monospace',
                 }}
               >
-                ← MENU
+                {t[lang].backMenu}
               </button>
             )}
 
@@ -682,7 +684,9 @@ export function GameScreen() {
                 fontFamily: '"Courier New", monospace',
               }}
             >
-              <span>{mode.type === "emulator" ? "✓ ROM" : "▲ CARGAR ROM"}</span>
+              <span>
+                {mode.type === "emulator" ? t[lang].romLoaded : t[lang].loadRom}
+              </span>
               <input
                 type="file"
                 accept=".zip,.7z,.nes,.smc,.sfc,.gba,.gb,.gbc,.bin,.rom,.md,.n64,.z64,.v64"
