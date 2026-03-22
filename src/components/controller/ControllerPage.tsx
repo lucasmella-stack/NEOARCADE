@@ -109,6 +109,28 @@ export function ControllerPage() {
 
   const { press, release } = useGamepad();
 
+  // CSS pseudo-fullscreen for iOS Safari (no Fullscreen API support)
+  const iosPseudoFullscreen = () => {
+    document.documentElement.classList.add("pad-ios-full");
+    // Trick iOS into hiding the address bar
+    document.body.style.height = "101dvh";
+    window.scrollTo(0, 1);
+    setTimeout(() => {
+      document.body.style.height = "";
+    }, 400);
+    try {
+      (
+        screen.orientation as ScreenOrientation & {
+          lock(o: string): Promise<void>;
+        }
+      )
+        .lock("landscape")
+        .catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  };
+
   const handleFullscreen = useCallback(() => {
     const el = document.documentElement;
     const isFullNow = !!(
@@ -117,24 +139,33 @@ export function ControllerPage() {
         .webkitFullscreenElement
     );
     if (!isFullNow) {
-      // iOS Safari uses webkitRequestFullscreen
-      const doFs = (
+      const nativeFs = (
         el.requestFullscreen ??
         (el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> })
           .webkitRequestFullscreen
       )?.bind(el);
-      doFs?.()
-        .then(() => {
-          try {
-            const o = screen.orientation as ScreenOrientation & {
-              lock(o: string): Promise<void>;
-            };
-            o.lock("landscape").catch(() => {});
-          } catch {
-            /* ignore */
-          }
-        })
-        .catch(() => {});
+      if (nativeFs) {
+        nativeFs()
+          .then(() => {
+            try {
+              const o = screen.orientation as ScreenOrientation & {
+                lock(o: string): Promise<void>;
+              };
+              o.lock("landscape").catch(() => {});
+            } catch {
+              /* ignore */
+            }
+          })
+          .catch(() => {
+            // API exists but request was rejected — use CSS fallback
+            setIsFullscreen(true);
+            iosPseudoFullscreen();
+          });
+      } else {
+        // iOS Safari: no Fullscreen API — use CSS pseudo-fullscreen
+        setIsFullscreen(true);
+        iosPseudoFullscreen();
+      }
     } else {
       const doExit = (
         document.exitFullscreen ??
@@ -146,6 +177,8 @@ export function ControllerPage() {
       } catch {
         /* ignore */
       }
+      setIsFullscreen(false);
+      document.documentElement.classList.remove("pad-ios-full");
     }
   }, []);
 

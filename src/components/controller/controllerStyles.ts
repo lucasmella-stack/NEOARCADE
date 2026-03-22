@@ -46,6 +46,14 @@ export const padStyles = `
     -webkit-user-select: none;
   }
 
+  /* ── iOS pseudo-fullscreen: safe area insets when address bar is hidden ── */
+  html.pad-ios-full .pad-root {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
   /* ── Fullscreen button ── */
   .pad-fs-btn {
     position: fixed;
