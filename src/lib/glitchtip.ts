@@ -13,7 +13,7 @@ export function glitchtipOptions(
   return {
     dsn,
     environment: environment || "production",
-    tracesSampleRate: 0.05,
+    tracesSampleRate: 0,
     sendDefaultPii: false,
     beforeSend: scrubEvent,
     beforeSendTransaction: scrubEvent,
