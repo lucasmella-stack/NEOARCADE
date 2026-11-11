@@ -157,9 +157,17 @@ export function ControllerPage() {
             }
           })
           .catch(() => {
-            // API exists but request was rejected — use CSS fallback
-            setIsFullscreen(true);
-            iosPseudoFullscreen();
+            // Only fall back to CSS pseudo-fullscreen on iOS.
+            // On Android, requestFullscreen may be rejected in some WebViews —
+            // don't fake fullscreen with CSS there, just leave the button visible.
+            const isIos =
+              /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === "MacIntel" &&
+                navigator.maxTouchPoints > 1);
+            if (isIos) {
+              setIsFullscreen(true);
+              iosPseudoFullscreen();
+            }
           });
       } else {
         // iOS Safari: no Fullscreen API — use CSS pseudo-fullscreen
@@ -221,7 +229,7 @@ export function ControllerPage() {
       {!isFullscreen && (
         <button
           className="pad-fs-btn"
-          onTouchStart={(e) => {
+          onTouchEnd={(e) => {
             e.preventDefault();
             handleFullscreen();
           }}

@@ -36,7 +36,6 @@ public/games/bios/*.zip
 *.s1
 *.v1
 *.v2
-pnpm-lock.yaml
 .mypy_cache/
 .ruff_cache/
 *.egg-info/

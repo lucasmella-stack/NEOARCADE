@@ -259,22 +259,22 @@ export const padStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(4px, 1.5vmin, 8px);
+    gap: clamp(12px, 3.5vmin, 22px);
   }
   .abxy-mid {
     display: flex;
-    gap: clamp(2px, 1vmin, 6px);
+    gap: clamp(12px, 3.5vmin, 22px);
     align-items: center;
   }
   .action-btn {
-    width: clamp(68px, 20vmin, 100px);
-    height: clamp(68px, 20vmin, 100px);
+    width: clamp(82px, 24vmin, 118px);
+    height: clamp(82px, 24vmin, 118px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: "Courier New", monospace;
-    font-size: clamp(15px, 4.5vmin, 24px);
+    font-size: clamp(20px, 6vmin, 30px);
     font-weight: 900;
     cursor: pointer;
     outline: none;
