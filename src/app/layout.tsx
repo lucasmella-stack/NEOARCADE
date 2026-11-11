@@ -1,4 +1,5 @@
 import { PwaRegister } from "@/components/shared/PwaRegister";
+import { UmamiScript } from "@/components/shared/UmamiScript";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body>
         <PwaRegister />
         {children}
+        <UmamiScript />
       </body>
     </html>
   );

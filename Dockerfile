@@ -37,8 +37,12 @@ ENV NEXT_PUBLIC_SPONSOR_URL=$NEXT_PUBLIC_SPONSOR_URL
 # para el bundle cliente. Vacío por defecto: forks no reportan a nuestro GlitchTip.
 ARG GLITCHTIP_DSN=
 ARG GLITCHTIP_ENVIRONMENT=production
+ARG NEXT_PUBLIC_UMAMI_SRC=https://track.hausdersieg.com/script.js
+ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=ebcee708-5523-489a-8b47-1fec1daa56f2
 ENV GLITCHTIP_DSN=$GLITCHTIP_DSN
 ENV GLITCHTIP_ENVIRONMENT=$GLITCHTIP_ENVIRONMENT
+ENV NEXT_PUBLIC_UMAMI_SRC=$NEXT_PUBLIC_UMAMI_SRC
+ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
 
 # Compile server.ts → server.cjs so "node server.cjs" works at runtime
 RUN pnpm exec esbuild server.ts \
