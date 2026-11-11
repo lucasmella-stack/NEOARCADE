@@ -60,6 +60,9 @@ export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
 
   const data = breadcrumb.data;
   if (data) {
+    // Node's http breadcrumb keeps the parameter names here (`?token=[Filtered]`).
+    delete data["http.query"];
+    delete data["http.fragment"];
     for (const field of URL_BREADCRUMB_FIELDS) {
       const value = data[field];
       if (typeof value === "string") {
