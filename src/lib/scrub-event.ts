@@ -1,10 +1,10 @@
-import type { Event } from "@sentry/nextjs";
+import type { Breadcrumb, Event } from "@sentry/nextjs";
 
 /**
  * `sendDefaultPii: false` does not stop the Sentry SDK (10.x) from attaching
  * the incoming request's `Cookie` and `Authorization` headers, nor
- * `request.cookies`. This removes them, plus client IP headers and bodies,
- * before anything leaves the process.
+ * `request.cookies`, nor full URLs with their query string (search terms,
+ * tokens). This removes all of that before anything leaves the process.
  */
 
 const SENSITIVE_HEADERS = new Set([
@@ -12,12 +12,20 @@ const SENSITIVE_HEADERS = new Set([
   "cf-connecting-ip",
   "cookie",
   "proxy-authorization",
+  "referer",
   "set-cookie",
   "stripe-signature",
   "true-client-ip",
   "x-forwarded-for",
   "x-real-ip",
 ]);
+
+const URL_BREADCRUMB_FIELDS = ["url", "from", "to"] as const;
+
+/** Drops the query string and fragment: `/a?q=x#y` -> `/a`. */
+export function stripQuery(url: string): string {
+  return url.split(/[?#]/, 1)[0] ?? "";
+}
 
 export function scrubEvent<T extends Event>(event: T): T {
   const request = event.request;
@@ -27,6 +35,11 @@ export function scrubEvent<T extends Event>(event: T): T {
 
   delete request.cookies;
   delete request.data;
+  delete request.query_string;
+
+  if (request.url) {
+    request.url = stripQuery(request.url);
+  }
 
   if (request.headers) {
     for (const name of Object.keys(request.headers)) {
@@ -37,4 +50,23 @@ export function scrubEvent<T extends Event>(event: T): T {
   }
 
   return event;
+}
+
+/** Console breadcrumbs can carry anything that was logged; URLs lose their query. */
+export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
+  if (breadcrumb.category === "console") {
+    return null;
+  }
+
+  const data = breadcrumb.data;
+  if (data) {
+    for (const field of URL_BREADCRUMB_FIELDS) {
+      const value = data[field];
+      if (typeof value === "string") {
+        data[field] = stripQuery(value);
+      }
+    }
+  }
+
+  return breadcrumb;
 }

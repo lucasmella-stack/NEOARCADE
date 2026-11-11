@@ -1,6 +1,6 @@
 import type { BrowserOptions, NodeOptions } from "@sentry/nextjs";
 
-import { scrubEvent } from "./scrub-event";
+import { scrubBreadcrumb, scrubEvent } from "./scrub-event";
 
 /**
  * Única fuente de verdad de las opciones del SDK de Sentry → GlitchTip
@@ -15,6 +15,7 @@ export function glitchtipOptions(
     environment: environment || "production",
     tracesSampleRate: 0,
     sendDefaultPii: false,
+    beforeBreadcrumb: scrubBreadcrumb,
     beforeSend: scrubEvent,
     beforeSendTransaction: scrubEvent,
   };
