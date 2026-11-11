@@ -33,6 +33,13 @@ ARG NEXT_PUBLIC_SPONSOR_URL=https://ko-fi.com/lucasmella
 ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
 ENV NEXT_PUBLIC_SPONSOR_URL=$NEXT_PUBLIC_SPONSOR_URL
 
+# Tracking. GLITCHTIP_DSN también se pasa en runtime (servidor); aquí hace falta
+# para el bundle cliente. Vacío por defecto: forks no reportan a nuestro GlitchTip.
+ARG GLITCHTIP_DSN=
+ARG GLITCHTIP_ENVIRONMENT=production
+ENV GLITCHTIP_DSN=$GLITCHTIP_DSN
+ENV GLITCHTIP_ENVIRONMENT=$GLITCHTIP_ENVIRONMENT
+
 # Compile server.ts → server.cjs so "node server.cjs" works at runtime
 RUN pnpm exec esbuild server.ts \
       --bundle \
